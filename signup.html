@@ -1,47 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sign Up - LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<header>
+<header class="welcome-header">
   <h1>LocalRoom</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="listings.html">Browse Rooms</a>
-    <a href="list-room.html">List a Room</a>
-    <a href="login.html">Login</a>
-    <a href="signup.html">Sign Up</a>
-  </nav>
 </header>
 
 <div class="form-container">
-  <h2>Create an Account</h2>
+  <h2 id="role-title">Create an Account</h2>
+
   <form id="signup-form">
     <label for="name">Full Name:</label>
-    <input type="text" id="name" required>
+    <input type="text" id="name" required />
 
     <label for="email">Email:</label>
-    <input type="email" id="email" required>
+    <input type="email" id="email" required />
 
     <label for="password">Password:</label>
-    <input type="password" id="password" required>
+    <input type="password" id="password" required />
 
     <button type="submit">Sign Up</button>
   </form>
+
   <p style="text-align:center;">Already have an account? <a href="login.html">Login</a></p>
 </div>
 
-<!-- Remove this line if you're no longer using it -->
-<!-- <script src="js/form-validation.js"></script> -->
-
-<!-- Firebase config and signup logic -->
 <script type="module" src="firebase-config.js"></script>
 <script type="module" src="signup.js"></script>
+
+<script>
+  // Set custom role heading based on URL param
+  const urlParams = new URLSearchParams(window.location.search);
+  const role = urlParams.get('role');
+  const title = document.getElementById('role-title');
+
+  if (role === 'landlord') {
+    title.textContent = "Sign Up as a Landlord";
+  } else if (role === 'seeker') {
+    title.textContent = "Sign Up as a Room Seeker";
+  } else {
+    title.textContent = "Create an Account";
+  }
+</script>
 
 </body>
 </html>
