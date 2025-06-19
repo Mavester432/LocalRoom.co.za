@@ -1,26 +1,38 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login - LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="form-container">
-    <h2>Login to LocalRoom</h2>
-    <form id="login-form">
-      <label for="email">Email:</label>
-      <input type="email" id="email" required />
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" required />
+<header>
+  <h1>LocalRoom</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="listings.html">Browse Rooms</a>
+    <a href="list-room.html">List a Room</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
 
-      <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-  </div>
-  <script src="js/form-validation.js"></script>
+<div class="form-container">
+  <h2>Login to LocalRoom</h2>
+  <form id="login-form">
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" required>
+
+    <button type="submit">Login</button>
+  </form>
+  <p style="text-align:center;">Don't have an account? <a href="signup.html">Sign Up</a></p>
+</div>
+
+<script src="js/form-validation.js"></script>
 </body>
 </html>
