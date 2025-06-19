@@ -36,34 +36,29 @@
   </form>
 </div>
 
-<script>
-  document.getElementById("image").addEventListener("input", function() {
-    document.getElementById("preview").src = this.value;
-  });
-
-  document.getElementById("list-room-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const room = {
-      title: document.getElementById("title").value,
-      location: document.getElementById("location").value,
-      price: document.getElementById("price").value,
-      features: document.getElementById("features").value,
-      image: document.getElementById("image").value
-    };
-    let listings = JSON.parse(localStorage.getItem("listings")) || [];
-    listings.push(room);
-    localStorage.setItem("listings", JSON.stringify(listings));
-    alert("Room submitted!");
-    this.reset();
-    document.getElementById("preview").src = "";
-  });
-</script>
-
-<!-- 🔐 Role-based access restriction for Landlords only -->
+<!-- 🔥 Firestore-based listing submission -->
 <script type="module">
   import { auth, db } from "./firebase-config.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import {
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import {
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+  const form = document.getElementById("list-room-form");
+  const preview = document.getElementById("preview");
+  const imageInput = document.getElementById("image");
+
+  imageInput.addEventListener("input", () => {
+    preview.src = imageInput.value;
+  });
+
+  let currentUser = null;
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -72,16 +67,37 @@
       return;
     }
 
+    currentUser = user;
+
     const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (userDoc.exists()) {
-      const role = userDoc.data().role;
-      if (role !== "landlord") {
-        alert("Access denied. Only landlords can list rooms.");
-        window.location.href = "listings.html";
-      }
-    } else {
-      alert("User role not found.");
-      window.location.href = "login.html";
+    if (!userDoc.exists() || userDoc.data().role !== "landlord") {
+      alert("Access denied. Only landlords can list rooms.");
+      window.location.href = "listings.html";
+    }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    const room = {
+      title: document.getElementById("title").value,
+      location: document.getElementById("location").value,
+      price: parseFloat(document.getElementById("price").value),
+      features: document.getElementById("features").value,
+      image: document.getElementById("image").value,
+      landlordId: currentUser.uid,
+      createdAt: serverTimestamp()
+    };
+
+    try {
+      await addDoc(collection(db, "listings"), room);
+      alert("Room submitted successfully!");
+      form.reset();
+      preview.src = "";
+    } catch (error) {
+      console.error("Firestore listing error:", error);
+      alert("Error submitting room. Please try again.");
     }
   });
 </script>
