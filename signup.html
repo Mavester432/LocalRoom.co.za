@@ -19,6 +19,17 @@
     <label for="name">Full Name:</label>
     <input type="text" id="name" required />
 
+    <div id="landlord-fields" style="display: none;">
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" placeholder="e.g. 0123456789" />
+
+      <label for="business">Business Name (optional):</label>
+      <input type="text" id="business" />
+
+      <label for="address">Address:</label>
+      <input type="text" id="address" />
+    </div>
+
     <label for="email">Email:</label>
     <input type="email" id="email" required />
 
@@ -28,24 +39,28 @@
     <button type="submit">Sign Up</button>
   </form>
 
-  <p style="text-align:center;">Already have an account? <a href="login.html">Login</a></p>
+  <p style="text-align:center;">Already have an account?
+    <a href="login.html?role=landlord" id="login-link">Login</a>
+  </p>
 </div>
 
 <script type="module" src="firebase-config.js"></script>
 <script type="module" src="signup.js"></script>
 
 <script>
-  // Set custom role heading based on URL param
-  const urlParams = new URLSearchParams(window.location.search);
-  const role = urlParams.get('role');
-  const title = document.getElementById('role-title');
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get("role");
+  const title = document.getElementById("role-title");
+  const landlordFields = document.getElementById("landlord-fields");
+  const loginLink = document.getElementById("login-link");
 
-  if (role === 'landlord') {
+  if (role === "landlord") {
     title.textContent = "Sign Up as a Landlord";
-  } else if (role === 'seeker') {
+    landlordFields.style.display = "block";
+    loginLink.href = "login.html?role=landlord";
+  } else if (role === "seeker") {
     title.textContent = "Sign Up as a Room Seeker";
-  } else {
-    title.textContent = "Create an Account";
+    loginLink.href = "login.html?role=seeker";
   }
 </script>
 
