@@ -30,11 +30,24 @@
   </div>
 
   <script>
-    document.getElementById("list-room-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      alert("Room submitted! (This is just a placeholder)");
-      this.reset();
-    });
-  </script>
+  document.getElementById("list-room-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const room = {
+      title: document.getElementById("title").value,
+      location: document.getElementById("location").value,
+      price: document.getElementById("price").value,
+      features: document.getElementById("features").value,
+      image: document.getElementById("image").value
+    };
+
+    let listings = JSON.parse(localStorage.getItem("listings")) || [];
+    listings.push(room);
+    localStorage.setItem("listings", JSON.stringify(listings));
+
+    alert("Room submitted!");
+    this.reset();
+  });
+</script>
 </body>
 </html>
