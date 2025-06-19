@@ -153,4 +153,21 @@ p {
   text-align: center;
   margin-top: 16px;
 }
+@media (max-width: 600px) {
+  .form-container, .room-card {
+    width: 90%;
+    margin: auto;
+  }
+
+  .room-card img {
+    width: 100%;
+    height: auto;
+  }
+
+  nav, header, footer {
+    text-align: center;
+    padding: 10px;
+  }
+}
+
 
