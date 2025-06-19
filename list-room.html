@@ -6,17 +6,13 @@
   <title>List a Room – LocalRoom</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* Simple image preview grid */
-    #preview-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
+    /* small preview styling */
     #preview-container img {
-      width: 100px;
-      height: 80px;
+      max-width: 100px;
+      max-height: 100px;
       object-fit: cover;
+      margin-right: 10px;
+      margin-bottom: 10px;
       border-radius: 5px;
       border: 1px solid #ccc;
     }
@@ -45,7 +41,6 @@
 
     <label for="images">Add Pictures (up to 6):</label>
     <input type="file" id="images" accept="image/*" multiple required />
-
     <div id="preview-container"></div>
 
     <button type="submit">Submit</button>
@@ -54,9 +49,21 @@
 
 <script type="module">
   import { auth, db, storage } from "./firebase-config.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-  import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+  import {
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import {
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import {
+    ref,
+    uploadBytes,
+    getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
   const form = document.getElementById("list-room-form");
   const imagesInput = document.getElementById("images");
@@ -64,16 +71,20 @@
 
   let currentUser = null;
 
-  // Show previews of selected images, max 6
+  // Preview selected images
   imagesInput.addEventListener("change", () => {
     previewContainer.innerHTML = "";
-    const files = Array.from(imagesInput.files).slice(0, 6);
-
-    files.forEach(file => {
+    const files = imagesInput.files;
+    if (files.length > 6) {
+      alert("You can upload up to 6 images only.");
+      imagesInput.value = "";
+      return;
+    }
+    for (let i = 0; i < files.length; i++) {
       const img = document.createElement("img");
-      img.src = URL.createObjectURL(file);
+      img.src = URL.createObjectURL(files[i]);
       previewContainer.appendChild(img);
-    });
+    }
   });
 
   onAuthStateChanged(auth, async (user) => {
@@ -96,35 +107,38 @@
     e.preventDefault();
     if (!currentUser) return;
 
-    const files = Array.from(imagesInput.files).slice(0, 6);
-    if (files.length === 0) {
-      alert("Please upload at least one image.");
+    const files = imagesInput.files;
+    if (!files.length) {
+      alert("Please select at least one image.");
+      return;
+    }
+    if (files.length > 6) {
+      alert("You can upload up to 6 images only.");
       return;
     }
 
     try {
-      // Upload images to Firebase Storage and get URLs
+      // Upload images one by one and get URLs
       const imageUrls = [];
-      for (const file of files) {
-        const storageRef = ref(storage, `room-images/${currentUser.uid}/${Date.now()}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(snapshot.ref);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const storageRef = ref(storage, `rooms/${currentUser.uid}/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
         imageUrls.push(url);
       }
 
-      // Prepare room data
       const room = {
         title: document.getElementById("title").value,
         location: document.getElementById("location").value,
         price: parseFloat(document.getElementById("price").value),
         features: document.getElementById("features").value,
-        images: imageUrls,  // store array of image URLs
+        images: imageUrls,
         landlordId: currentUser.uid,
         createdAt: serverTimestamp()
       };
 
       await addDoc(collection(db, "listings"), room);
-
       alert("Room submitted successfully!");
       form.reset();
       previewContainer.innerHTML = "";
