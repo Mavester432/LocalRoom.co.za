@@ -1,29 +1,41 @@
-<!-- signup.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sign Up - LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="form-container">
-    <h2>Sign Up for LocalRoom</h2>
-    <form id="signup-form">
-      <label for="name">Full Name:</label>
-      <input type="text" id="name" required />
 
-      <label for="email">Email:</label>
-      <input type="email" id="email" required />
+<header>
+  <h1>LocalRoom</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="listings.html">Browse Rooms</a>
+    <a href="list-room.html">List a Room</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" required />
+<div class="form-container">
+  <h2>Create an Account</h2>
+  <form id="signup-form">
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" required>
 
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="login.html">Login</a></p>
-  </div>
-  <script src="js/form-validation.js"></script>
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" required>
+
+    <button type="submit">Sign Up</button>
+  </form>
+  <p style="text-align:center;">Already have an account? <a href="login.html">Login</a></p>
+</div>
+
+<script src="js/form-validation.js"></script>
 </body>
 </html>
