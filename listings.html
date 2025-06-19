@@ -1,86 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Browse Rooms | LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browse Rooms – LocalRoom</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <div class="logo">LocalRoom</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="login.html">Login</a>
-      <a href="signup.html">Sign Up</a>
-    </nav>
-  </header>
 
-  <section class="filters">
-    <h2>Find a Room</h2>
-    <form id="filterForm">
-      <input type="text" placeholder="Search by location..." />
-      <select>
-        <option value="">Price Range</option>
-        <option value="under-2000">Under R2000</option>
-        <option value="2000-5000">R2000–R5000</option>
-        <option value="5000-plus">Over R5000</option>
-      </select>
-      <button type="submit">Search</button>
-    </form>
-  </section>
+<header>
+  <h1>LocalRoom</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="listings.html">Browse Rooms</a>
+    <a href="list-room.html">List a Room</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
 
-  <main class="listings">
-    <!-- Room Card -->
-    <div class="room-card">
-      <img src="assets/images/room1.jpg" alt="Room 1" />
-      <div class="info">
-        <h3>R3500 / month</h3>
-        <p>1 Bedroom, Sunnyside, Pretoria</p>
-        <a href="room.html">View Details</a>
-      </div>
-    </div>
+<main>
+  <h2>Available Rooms</h2>
+  <input type="text" id="filter" placeholder="Search by location..." style="margin: 20px auto; display:block; padding: 10px; width: 80%; max-width: 400px;">
+  <div class="listings-container"></div>
+</main>
 
-    <div class="room-card">
-      <img src="assets/images/room2.jpg" alt="Room 2" />
-      <div class="info">
-        <h3>R2500 / month</h3>
-        <p>Room in shared flat, Cape Town CBD</p>
-        <a href="room.html">View Details</a>
-      </div>
-    </div>
-
-    <div class="room-card">
-      <img src="assets/images/room3.jpg" alt="Room 3" />
-      <div class="info">
-        <h3>R1800 / month</h3>
-        <p>Backyard Room, Soweto</p>
-        <a href="room.html">View Details</a>
-      </div>
-    </div>
-
-    <!-- Add more cards as needed -->
-  </main>
-
-  <footer>
-    &copy; 2025 LocalRoom.co.za. All rights reserved.
-  </footer>
-  <script>
+<script>
   const container = document.querySelector('.listings-container');
   const listings = JSON.parse(localStorage.getItem("listings")) || [];
 
-  listings.forEach(room => {
-    const card = document.createElement("div");
-    card.className = "room-card";
-    card.innerHTML = `
-      <img src="${room.image}" alt="${room.title}" />
-      <h3>${room.title}</h3>
-      <p>${room.location} – R${room.price}/month</p>
-      <p>${room.features}</p>
-      <button>Contact Landlord</button>
-    `;
-    container.appendChild(card);
+  function displayListings(list) {
+    container.innerHTML = "";
+    list.forEach(room => {
+      const card = document.createElement("div");
+      card.className = "room-card";
+      card.innerHTML = `
+        <img src="${room.image}" alt="${room.title}" />
+        <h3>${room.title}</h3>
+        <p>${room.location} – R${room.price}/month</p>
+        <p>${room.features}</p>
+        <button>Contact Landlord</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  displayListings(listings);
+
+  document.getElementById("filter").addEventListener("input", function () {
+    const value = this.value.toLowerCase();
+    const filtered = listings.filter(room =>
+      room.location.toLowerCase().includes(value) || room.title.toLowerCase().includes(value)
+    );
+    displayListings(filtered);
   });
 </script>
+
 </body>
 </html>
