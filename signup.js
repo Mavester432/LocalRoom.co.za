@@ -1,4 +1,3 @@
-// signup.js
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { auth, db } from "./firebase-config.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
@@ -6,17 +5,9 @@ import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-
 document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
 
-  // Get role from URL query params: ?role=landlord or ?role=seeker
+  // Get role from query string
   const urlParams = new URLSearchParams(window.location.search);
-  const role = urlParams.get("role") || "seeker"; // default seeker if not provided
-
-  // Optional: update heading based on role
-  const heading = document.querySelector(".form-container h2");
-  if (heading) {
-    if (role === "landlord") heading.textContent = "Sign Up as a Landlord";
-    else if (role === "seeker") heading.textContent = "Sign Up as a Room Seeker";
-    else heading.textContent = "Create an Account";
-  }
+  const role = urlParams.get("role") || "seeker";
 
   if (signupForm) {
     signupForm.addEventListener("submit", async (e) => {
@@ -26,31 +17,41 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      // Basic Validation
-      if (!name) {
-        alert("Please enter your name.");
-        return;
-      }
-      if (!email.includes("@")) {
-        alert("Please enter a valid email.");
-        return;
-      }
-      if (password.length < 6) {
-        alert("Password must be at least 6 characters.");
-        return;
+      if (!name) return alert("Please enter your name.");
+      if (!email.includes("@")) return alert("Please enter a valid email.");
+      if (password.length < 6) return alert("Password must be at least 6 characters.");
+
+      // Additional landlord fields
+      let phone = "", business = "", address = "";
+
+      if (role === "landlord") {
+        phone = document.getElementById("phone").value.trim();
+        business = document.getElementById("business").value.trim();
+        address = document.getElementById("address").value.trim();
+
+        if (!phone) return alert("Please enter your phone number.");
+        if (!address) return alert("Please enter your address.");
       }
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Save extra info to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          name: name,
-          email: email,
-          role: role,
+        // Store user info in Firestore
+        const userData = {
+          name,
+          email,
+          role,
           createdAt: new Date()
-        });
+        };
+
+        if (role === "landlord") {
+          userData.phone = phone;
+          userData.business = business;
+          userData.address = address;
+        }
+
+        await setDoc(doc(db, "users", user.uid), userData);
 
         alert("Signup successful!");
 
@@ -60,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           window.location.href = "listings.html";
         }
+
       } catch (error) {
         alert("Error: " + error.message);
       }
