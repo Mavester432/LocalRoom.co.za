@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Browse Rooms – LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -14,7 +14,7 @@
 
 <main>
   <h2>Available Rooms</h2>
-  <input type="text" id="filter" placeholder="Search by location..." style="margin: 20px auto; display:block; padding: 10px; width: 80%; max-width: 400px;" />
+  <input type="text" id="filter" placeholder="Search by location..." style="margin: 20px auto; display:block; padding: 10px; width: 80%; max-width: 400px;">
   <div class="listings-container"></div>
 </main>
 
@@ -46,6 +46,33 @@
       room.location.toLowerCase().includes(value) || room.title.toLowerCase().includes(value)
     );
     displayListings(filtered);
+  });
+</script>
+
+<!-- 🔐 Role-based access restriction for Seekers only -->
+<script type="module">
+  import { auth, db } from "./firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+      const role = userDoc.data().role;
+      if (role !== "seeker") {
+        alert("Access denied. Only room seekers can view listings.");
+        window.location.href = "list-room.html";
+      }
+    } else {
+      alert("User role not found.");
+      window.location.href = "login.html";
+    }
   });
 </script>
 
