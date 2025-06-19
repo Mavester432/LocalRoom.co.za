@@ -34,5 +34,28 @@
 </div>
 
 <script src="js/form-validation.js"></script>
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqTJ7hNrVqO_mJ4cfqb5fOj-pvqzq7qII",
+    authDomain: "localroomapp.firebaseapp.com",
+    projectId: "localroomapp",
+    storageBucket: "localroomapp.firebasestorage.app",
+    messagingSenderId: "232945388743",
+    appId: "1:232945388743:web:089083c9f60269406c02e2",
+    measurementId: "G-XBC1GV59MF"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
