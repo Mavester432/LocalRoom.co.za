@@ -1,4 +1,3 @@
-// login.js
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { auth, db } from "./firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
@@ -9,44 +8,37 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      // Basic validation
-      if (!email.includes("@")) {
-        alert("Please enter a valid email.");
-        return;
-      }
-      if (password.length < 6) {
-        alert("Password must be at least 6 characters.");
-        return;
-      }
+      if (!email.includes("@")) return alert("Please enter a valid email.");
+      if (password.length < 6) return alert("Password must be at least 6 characters.");
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Fetch user doc from Firestore
+        // Get user role from Firestore
         const userDocRef = doc(db, "users", user.uid);
-        const userDocSnap = await getDoc(userDocRef);
+        const userDoc = await getDoc(userDocRef);
 
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          const role = userData.role || "seeker"; // default to seeker
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const role = userData.role;
 
-          alert("Login successful!");
-
-          // Redirect based on role
           if (role === "landlord") {
             window.location.href = "list-room.html";
-          } else {
+          } else if (role === "seeker") {
             window.location.href = "listings.html";
+          } else {
+            alert("Invalid user role. Contact support.");
           }
         } else {
-          alert("User data not found. Please contact support.");
+          alert("No user data found. Please contact support.");
         }
+
       } catch (error) {
-        console.error("Login error:", error);
         alert("Login failed: " + error.message);
       }
     });
