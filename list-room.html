@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>List a Room – LocalRoom</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="form-container">
+    <h2>List a Room</h2>
+    <form id="list-room-form">
+      <label for="title">Room Title:</label>
+      <input type="text" id="title" required />
+
+      <label for="location">Location:</label>
+      <input type="text" id="location" required />
+
+      <label for="price">Price (ZAR/month):</label>
+      <input type="number" id="price" required />
+
+      <label for="features">Features:</label>
+      <textarea id="features" required></textarea>
+
+      <label for="image">Image URL:</label>
+      <input type="url" id="image" required />
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("list-room-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      alert("Room submitted! (This is just a placeholder)");
+      this.reset();
+    });
+  </script>
+</body>
+</html>
