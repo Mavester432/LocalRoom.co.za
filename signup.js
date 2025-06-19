@@ -5,63 +5,63 @@ import { auth, db } from "./firebase-config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
+  if (!signupForm) return;
 
   const urlParams = new URLSearchParams(window.location.search);
   const role = urlParams.get("role") || "seeker";
 
-  if (signupForm) {
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const phone = document.getElementById("phone")?.value.trim() || "";
+    const business = document.getElementById("business")?.value.trim() || "";
+    const address = document.getElementById("address")?.value.trim() || "";
 
-      const phone = document.getElementById("phone")?.value.trim() || "";
-      const business = document.getElementById("business")?.value.trim() || "";
-      const address = document.getElementById("address")?.value.trim() || "";
+    if (!name || !email.includes("@") || password.length < 6) {
+      alert("Please fill out all required fields correctly.");
+      return;
+    }
 
-      // Basic validation
-      if (!name || !email.includes("@") || password.length < 6) {
-        alert("Please fill out all required fields correctly.");
-        return;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userData = {
+        name,
+        email,
+        role,
+        createdAt: new Date()
+      };
+
+      if (role === "landlord") {
+        userData.phone = phone;
+        userData.business = business;
+        userData.address = address;
       }
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), userData);
 
-        const userData = {
-          name,
-          email,
-          role,
-          createdAt: new Date(),
-        };
+      alert("Signup successful!");
 
-        if (role === "landlord") {
-          userData.phone = phone;
-          userData.business = business;
-          userData.address = address;
-        }
-
-        await setDoc(doc(db, "users", user.uid), userData);
-
-        alert("Signup successful!");
-
-        // Redirect
+      // ✅ Guaranteed redirect
+      setTimeout(() => {
         if (role === "landlord") {
           window.location.href = "list-room.html";
         } else {
           window.location.href = "listings.html";
         }
-      } catch (error) {
-        if (error.code === "auth/email-already-in-use") {
-          alert("This email is already registered. Please log in instead.");
-        } else {
-          console.error(error);
-          alert("Signup failed: " + error.message);
-        }
+      }, 500);
+
+    } catch (error) {
+      console.error("Signup error:", error);
+      if (error.code === "auth/email-already-in-use") {
+        alert("This email is already registered. Please log in.");
+      } else {
+        alert("Error: " + error.message);
       }
-    });
-  }
+    }
+  });
 });
