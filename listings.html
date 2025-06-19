@@ -65,5 +65,22 @@
   <footer>
     &copy; 2025 LocalRoom.co.za. All rights reserved.
   </footer>
+  <script>
+  const container = document.querySelector('.listings-container');
+  const listings = JSON.parse(localStorage.getItem("listings")) || [];
+
+  listings.forEach(room => {
+    const card = document.createElement("div");
+    card.className = "room-card";
+    card.innerHTML = `
+      <img src="${room.image}" alt="${room.title}" />
+      <h3>${room.title}</h3>
+      <p>${room.location} – R${room.price}/month</p>
+      <p>${room.features}</p>
+      <button>Contact Landlord</button>
+    `;
+    container.appendChild(card);
+  });
+</script>
 </body>
 </html>
