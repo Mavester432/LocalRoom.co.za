@@ -1,38 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>List a Room – LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="form-container">
-    <h2>List a Room</h2>
-    <form id="list-room-form">
-      <label for="title">Room Title:</label>
-      <input type="text" id="title" required />
 
-      <label for="location">Location:</label>
-      <input type="text" id="location" required />
+<header>
+  <h1>LocalRoom</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="listings.html">Browse Rooms</a>
+    <a href="list-room.html">List a Room</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
 
-      <label for="price">Price (ZAR/month):</label>
-      <input type="number" id="price" required />
+<div class="form-container">
+  <h2>List a Room</h2>
+  <form id="list-room-form">
+    <label for="title">Room Title:</label>
+    <input type="text" id="title" required>
 
-      <label for="features">Features:</label>
-      <textarea id="features" required></textarea>
+    <label for="location">Location:</label>
+    <input type="text" id="location" required>
 
-      <label for="image">Image URL:</label>
-      <input type="url" id="image" required />
+    <label for="price">Price (ZAR/month):</label>
+    <input type="number" id="price" required>
 
-      <button type="submit">Submit</button>
-    </form>
-  </div>
+    <label for="features">Features:</label>
+    <textarea id="features" required></textarea>
 
-  <script>
+    <label for="image">Image URL:</label>
+    <input type="url" id="image" required>
+
+    <img id="preview" alt="Image Preview" style="max-width:100%; margin-top:10px;">
+
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
+<script>
+  document.getElementById("image").addEventListener("input", function() {
+    document.getElementById("preview").src = this.value;
+  });
+
   document.getElementById("list-room-form").addEventListener("submit", function(e) {
     e.preventDefault();
-
     const room = {
       title: document.getElementById("title").value,
       location: document.getElementById("location").value,
@@ -40,14 +57,14 @@
       features: document.getElementById("features").value,
       image: document.getElementById("image").value
     };
-
     let listings = JSON.parse(localStorage.getItem("listings")) || [];
     listings.push(room);
     localStorage.setItem("listings", JSON.stringify(listings));
-
     alert("Room submitted!");
     this.reset();
+    document.getElementById("preview").src = "";
   });
 </script>
+
 </body>
 </html>
