@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>List a Room – LocalRoom</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Simple image preview grid */
+    #preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #preview-container img {
+      width: 100px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
 
@@ -27,38 +43,38 @@
     <label for="features">Features:</label>
     <textarea id="features" required></textarea>
 
-    <label for="image">Image URL:</label>
-    <input type="url" id="image" required />
+    <label for="images">Add Pictures (up to 6):</label>
+    <input type="file" id="images" accept="image/*" multiple required />
 
-    <img id="preview" alt="Image Preview" style="max-width:100%; margin-top:10px;" />
+    <div id="preview-container"></div>
 
     <button type="submit">Submit</button>
   </form>
 </div>
 
-<!-- 🔥 Firestore-based listing submission -->
 <script type="module">
-  import { auth, db } from "./firebase-config.js";
-  import {
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-  import {
-    doc,
-    getDoc,
-    collection,
-    addDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { auth, db, storage } from "./firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
   const form = document.getElementById("list-room-form");
-  const preview = document.getElementById("preview");
-  const imageInput = document.getElementById("image");
-
-  imageInput.addEventListener("input", () => {
-    preview.src = imageInput.value;
-  });
+  const imagesInput = document.getElementById("images");
+  const previewContainer = document.getElementById("preview-container");
 
   let currentUser = null;
+
+  // Show previews of selected images, max 6
+  imagesInput.addEventListener("change", () => {
+    previewContainer.innerHTML = "";
+    const files = Array.from(imagesInput.files).slice(0, 6);
+
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      previewContainer.appendChild(img);
+    });
+  });
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -80,23 +96,40 @@
     e.preventDefault();
     if (!currentUser) return;
 
-    const room = {
-      title: document.getElementById("title").value,
-      location: document.getElementById("location").value,
-      price: parseFloat(document.getElementById("price").value),
-      features: document.getElementById("features").value,
-      image: document.getElementById("image").value,
-      landlordId: currentUser.uid,
-      createdAt: serverTimestamp()
-    };
+    const files = Array.from(imagesInput.files).slice(0, 6);
+    if (files.length === 0) {
+      alert("Please upload at least one image.");
+      return;
+    }
 
     try {
+      // Upload images to Firebase Storage and get URLs
+      const imageUrls = [];
+      for (const file of files) {
+        const storageRef = ref(storage, `room-images/${currentUser.uid}/${Date.now()}-${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        imageUrls.push(url);
+      }
+
+      // Prepare room data
+      const room = {
+        title: document.getElementById("title").value,
+        location: document.getElementById("location").value,
+        price: parseFloat(document.getElementById("price").value),
+        features: document.getElementById("features").value,
+        images: imageUrls,  // store array of image URLs
+        landlordId: currentUser.uid,
+        createdAt: serverTimestamp()
+      };
+
       await addDoc(collection(db, "listings"), room);
+
       alert("Room submitted successfully!");
       form.reset();
-      preview.src = "";
+      previewContainer.innerHTML = "";
     } catch (error) {
-      console.error("Firestore listing error:", error);
+      console.error("Error submitting room:", error);
       alert("Error submitting room. Please try again.");
     }
   });
