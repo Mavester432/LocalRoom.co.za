@@ -11,17 +11,42 @@
       margin: auto;
       padding: 20px;
     }
-    .form-container label {
+    label {
       display: block;
       margin-top: 10px;
     }
-    .form-container input,
-    .form-container textarea {
+    input, textarea {
       width: 100%;
       padding: 8px;
       margin-top: 4px;
     }
-    .form-container button {
+    #preview-container img {
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: cover;
+      margin: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      position: relative;
+    }
+    .img-wrapper {
+      display: inline-block;
+      position: relative;
+    }
+    .img-wrapper button {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button {
       margin-top: 15px;
       padding: 10px 20px;
       background: #2a9d8f;
@@ -30,7 +55,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .form-container button:hover {
+    button:hover {
       background: #21867a;
     }
   </style>
@@ -52,6 +77,10 @@
     <label for="features">Features:</label>
     <textarea id="features" rows="4" required></textarea>
 
+    <label for="new-images">Add New Images (optional):</label>
+    <input type="file" id="new-images" accept="image/*" multiple />
+    <div id="preview-container"></div>
+
     <button type="submit">Save Changes</button>
   </form>
 </div>
@@ -72,12 +101,15 @@
   const locationInput = document.getElementById("location");
   const priceInput = document.getElementById("price");
   const featuresInput = document.getElementById("features");
+  const previewContainer = document.getElementById("preview-container");
+  const newImagesInput = document.getElementById("new-images");
 
-  // Get room ID from URL
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("id");
 
   let currentUser = null;
+  let existingImages = []; // URLs
+  let removedImages = [];  // URLs to remove (not used for Cloudinary)
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -100,32 +132,89 @@
     const roomData = roomSnap.data();
 
     if (roomData.landlordId !== user.uid) {
-      alert("You do not have permission to edit this listing.");
+      alert("Access denied.");
       window.location.href = "dashboard.html";
       return;
     }
 
-    // Fill form with current data
+    // Prefill form
     titleInput.value = roomData.title;
     locationInput.value = roomData.location;
     priceInput.value = roomData.price;
     featuresInput.value = roomData.features;
+    existingImages = roomData.images || [];
+
+    // Display existing images
+    renderImages();
   });
+
+  function renderImages() {
+    previewContainer.innerHTML = "";
+    existingImages.forEach((url, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "img-wrapper";
+
+      const img = document.createElement("img");
+      img.src = url;
+
+      const btn = document.createElement("button");
+      btn.innerHTML = "×";
+      btn.onclick = () => {
+        existingImages.splice(index, 1);
+        renderImages();
+      };
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(btn);
+      previewContainer.appendChild(wrapper);
+    });
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const files = newImagesInput.files;
+    const totalImages = existingImages.length + files.length;
+
+    if (totalImages > 6) {
+      alert("You can have up to 6 images only.");
+      return;
+    }
+
     try {
+      const uploadedUrls = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append("file", files[i]);
+        formData.append("upload_preset", "unsigned_preset");
+
+        const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!data.secure_url) throw new Error("Upload failed");
+
+        uploadedUrls.push(data.secure_url);
+      }
+
+      const updatedImages = [...existingImages, ...uploadedUrls];
+
       await updateDoc(doc(db, "listings", roomId), {
         title: titleInput.value,
         location: locationInput.value,
         price: parseFloat(priceInput.value),
-        features: featuresInput.value
+        features: featuresInput.value,
+        images: updatedImages
       });
+
       alert("Listing updated!");
       window.location.href = "dashboard.html";
-    } catch (error) {
-      console.error("Error updating listing:", error);
-      alert("Failed to update listing.");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Something went wrong. Please try again.");
     }
   });
 </script>
