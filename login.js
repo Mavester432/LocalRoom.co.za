@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         console.log("User logged in:", user.uid);
 
-        // Correct collection name 'Data' instead of 'users'
-        const userDocRef = doc(db, "Data", user.uid);
+        // ✅ Read from the correct 'users' collection
+        const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           alert("No user data found. Please contact support.");
         }
+
       } catch (error) {
         alert("Login failed: " + error.message);
       }
