@@ -27,7 +27,6 @@
       margin: 6px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      position: relative;
     }
     .img-wrapper {
       display: inline-block;
@@ -77,7 +76,7 @@
     <label for="features">Features:</label>
     <textarea id="features" rows="4" required></textarea>
 
-    <label for="new-images">Add New Images (optional):</label>
+    <label for="new-images">Add New Images (optional, up to 6 total):</label>
     <input type="file" id="new-images" accept="image/*" multiple />
     <div id="preview-container"></div>
 
@@ -108,12 +107,11 @@
   const roomId = urlParams.get("id");
 
   let currentUser = null;
-  let existingImages = []; // URLs
-  let removedImages = [];  // URLs to remove (not used for Cloudinary)
+  let existingImages = [];
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      alert("You must be logged in.");
+      alert("Please log in.");
       window.location.href = "login.html";
       return;
     }
@@ -137,14 +135,12 @@
       return;
     }
 
-    // Prefill form
     titleInput.value = roomData.title;
     locationInput.value = roomData.location;
     priceInput.value = roomData.price;
     featuresInput.value = roomData.features;
     existingImages = roomData.images || [];
 
-    // Display existing images
     renderImages();
   });
 
@@ -177,44 +173,44 @@
     const totalImages = existingImages.length + files.length;
 
     if (totalImages > 6) {
-      alert("You can have up to 6 images only.");
+      alert("You can have up to 6 images total.");
       return;
     }
 
     try {
       const uploadedUrls = [];
 
-      for (let i = 0; i < files.length; i++) {
-        const formData = new FormData();
-        formData.append("file", files[i]);
-        formData.append("upload_preset", "unsigned_preset");
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const formData = new FormData();
+          formData.append("file", files[i]);
+          formData.append("upload_preset", "unsigned_preset");
 
-        const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
-          method: "POST",
-          body: formData
-        });
+          const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
+            method: "POST",
+            body: formData
+          });
 
-        const data = await res.json();
-        if (!data.secure_url) throw new Error("Upload failed");
-
-        uploadedUrls.push(data.secure_url);
+          const data = await res.json();
+          if (data.secure_url) uploadedUrls.push(data.secure_url);
+        }
       }
 
-      const updatedImages = [...existingImages, ...uploadedUrls];
+      const finalImages = [...existingImages, ...uploadedUrls];
 
       await updateDoc(doc(db, "listings", roomId), {
         title: titleInput.value,
         location: locationInput.value,
         price: parseFloat(priceInput.value),
         features: featuresInput.value,
-        images: updatedImages
+        images: finalImages
       });
 
       alert("Listing updated!");
       window.location.href = "dashboard.html";
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Something went wrong. Please try again.");
+      alert("Something went wrong. Try again.");
     }
   });
 </script>
