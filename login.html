@@ -4,33 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/signup.css" />
 </head>
 <body>
 
-<header class="welcome-header">
-  <h1>LocalRoom</h1>
-</header>
+<div class="signup-container">
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <h1>Welcome Back</h1>
+    <p>Login to manage your listings or find your next room.</p>
+    <img src="assets/login-graphic.svg" alt="Login Illustration" />
+  </div>
 
-<div class="form-container">
-  <h2>Login to Your Account</h2>
-  <form id="login-form">
-    <label for="email">Email:</label>
-    <input type="email" id="email" required />
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <h2 id="role-title">Login to Your Account</h2>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" required />
-
-    <button type="submit">Login</button>
-  </form>
-  <p style="text-align:center;">
-    Don’t have an account? <a href="signup.html">Sign up</a>
-  </p>
+    <p class="login-text">
+      Don’t have an account?
+      <a href="signup.html?role=landlord" id="signup-link">Sign up</a>
+    </p>
+  </div>
 </div>
 
-<!-- Firebase config and login script -->
+<!-- Firebase -->
 <script type="module" src="firebase-config.js"></script>
 <script type="module" src="login.js"></script>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get("role");
+  const title = document.getElementById("role-title");
+  const signupLink = document.getElementById("signup-link");
+
+  if (role === "landlord") {
+    title.textContent = "Landlord Login";
+    signupLink.href = "signup.html?role=landlord";
+  } else if (role === "seeker") {
+    title.textContent = "Room Seeker Login";
+    signupLink.href = "signup.html?role=seeker";
+  }
+</script>
 
 </body>
 </html>
