@@ -163,7 +163,7 @@ footer {
   color: #1e90ff;
 }
 
-/* Welcome Page Styling */
+/* Welcome Page Styling (Mobile & Tablet) */
 main.welcome {
   min-height: 100vh;
   padding: 40px 20px;
@@ -202,17 +202,92 @@ main.welcome p {
   font-size: 1rem;
   font-weight: 600;
   color: white;
-  background-color: #1e90ff;
+  background-color: #FF3B30;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.3s ease;
   min-width: 160px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
+  box-shadow: 0 3px 6px rgba(255, 59, 48, 0.4);
 }
 
 .role-button:hover {
-  background-color: #0066cc;
+  background-color: #cc2a23;
+  box-shadow: 0 5px 12px rgba(204, 42, 35, 0.6);
+}
+
+/* ==== Desktop Layout with Left Panel ==== */
+@media (min-width: 1024px) {
+  .welcome-header {
+    display: none;
+  }
+
+  .desktop-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .left-panel {
+    width: 20%;
+    background-color: #1e1e1e;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    flex-direction: column;
+  }
+
+  .left-panel h2 {
+    font-size: 2rem;
+    color: white;
+    text-align: center;
+  }
+
+  .main-content {
+    width: 80%;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .main-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #FF3B30;
+  }
+
+  .main-content p {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto 1rem;
+    line-height: 1.6;
+  }
+
+  .role-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .role-button {
+    flex: 0 0 auto;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 0;
+  }
+
+  footer {
+    padding: 30px 0;
+    background: #fff;
+    text-align: center;
+  }
 }
