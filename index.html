@@ -21,7 +21,7 @@
       font-size: 1.2rem;
       font-weight: 700;
       color: white;
-      background-color: #FF3B30; /* red */
+      background-color: #FF3B30;
       border: none;
       border-radius: 0;
       cursor: pointer;
@@ -42,14 +42,101 @@
       .role-buttons {
         flex-direction: column;
       }
+
       .role-button {
         flex: 1 1 100%;
+      }
+    }
+
+    /* PC View Only - Left Panel + Main Content */
+    @media (min-width: 1024px) {
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+
+      .welcome-header {
+        display: none;
+      }
+
+      .desktop-layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .left-panel {
+        width: 20%;
+        background-color: #1e1e1e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        flex-direction: column;
+      }
+
+      .left-panel h2 {
+        font-size: 2rem;
+        color: white;
+        text-align: center;
+      }
+
+      .main-content {
+        width: 80%;
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .main-content h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #FF3B30;
+      }
+
+      .main-content p {
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto 1rem;
+        line-height: 1.6;
+      }
+
+      footer {
+        padding: 30px 0;
+        background: #fff;
+        text-align: center;
       }
     }
   </style>
 </head>
 <body>
 
+<!-- Desktop-only layout -->
+<div class="desktop-layout">
+  <aside class="left-panel">
+    <h2>LocalRoom</h2>
+  </aside>
+
+  <div class="main-content">
+    <h1>Welcome to LocalRoom</h1>
+    <p>Your one-stop platform to find the perfect room or rent out your space with ease and confidence.</p>
+    <p>Whether you're a landlord ready to share your space or a room seeker searching for the perfect place, we're here to make the process smooth and simple for you.</p>
+
+    <div class="role-buttons">
+      <a href="signup.html?role=landlord" class="role-button">I am a Landlord</a>
+      <a href="signup.html?role=seeker" class="role-button">I am a Room Seeker</a>
+    </div>
+
+    <footer>
+      © 2025 LocalRoom.co.za. All rights reserved.
+    </footer>
+  </div>
+</div>
+
+<!-- Mobile & Tablet View -->
 <header class="welcome-header">
   <h1>LocalRoom</h1>
 </header>
