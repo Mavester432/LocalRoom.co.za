@@ -19,17 +19,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Get user role from Firestore
-        const userDocRef = doc(db, "users", user.uid);
+        console.log("User logged in:", user.uid);
+
+        // Correct collection name 'Data' instead of 'users'
+        const userDocRef = doc(db, "Data", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
           const role = userData.role;
 
+          console.log("User role fetched from Firestore:", role);
+
           if (role === "landlord") {
-            window.location.href = "landlord-home.html";  // Redirect to new landing page
+            console.log("Redirecting landlord to landlord-home.html");
+            window.location.href = "landlord-home.html";
           } else if (role === "seeker") {
+            console.log("Redirecting seeker to listings.html");
             window.location.href = "listings.html";
           } else {
             alert("Invalid user role. Contact support.");
@@ -37,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           alert("No user data found. Please contact support.");
         }
-
       } catch (error) {
         alert("Login failed: " + error.message);
       }
