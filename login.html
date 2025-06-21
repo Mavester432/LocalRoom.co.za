@@ -5,8 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - LocalRoom</title>
   <link rel="stylesheet" href="css/signup.css" />
+  <style>
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      padding: 15px;
+    }
+    .top-bar button {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .top-bar button:hover {
+      background-color: #d62828;
+    }
+  </style>
 </head>
 <body>
+
+<!-- Top Bar (only shows Home button) -->
+<div class="top-bar">
+  <button onclick="window.location.href='index.html'">🏠 Home</button>
+</div>
 
 <div class="signup-container">
   <!-- Left Panel -->
@@ -39,6 +64,7 @@
 <script type="module" src="firebase-config.js"></script>
 <script type="module" src="login.js"></script>
 
+<!-- Role-based label & redirect logic -->
 <script>
   const params = new URLSearchParams(window.location.search);
   const role = params.get("role");
@@ -52,6 +78,17 @@
     title.textContent = "Room Seeker Login";
     signupLink.href = "signup.html?role=seeker";
   }
+
+  // Back button confirmation to simulate logout warning
+  window.onpopstate = function () {
+    const confirmLogout = confirm("You are about to leave or logout. Continue?");
+    if (confirmLogout) {
+      window.location.href = "index.html";
+    } else {
+      history.pushState(null, "", location.href);
+    }
+  };
+  history.pushState(null, "", location.href); // Initialize push
 </script>
 
 </body>
