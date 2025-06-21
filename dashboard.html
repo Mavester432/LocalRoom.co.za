@@ -64,7 +64,7 @@
 
 <div class="dashboard-container">
   <div class="top-bar">
-    <h2>My Listed Rooms</h2>
+    <h2 id="welcomeMessage">Welcome Landlord</h2>
     <div>
       <a href="list-room.html"><button>➕ List New Room</button></a>
       <button id="logout">Logout</button>
@@ -92,6 +92,7 @@
 
   const listingsContainer = document.getElementById("listings");
   const logoutBtn = document.getElementById("logout");
+  const welcomeMessage = document.getElementById("welcomeMessage");
 
   logoutBtn.addEventListener("click", async () => {
     await signOut(auth);
@@ -111,6 +112,10 @@
       window.location.href = "listings.html";
       return;
     }
+
+    // Set personalized welcome message here:
+    const landlordName = userDoc.data().name || "Landlord";
+    welcomeMessage.textContent = `Welcome ${landlordName}`;
 
     const q = query(collection(db, "listings"), where("landlordId", "==", user.uid));
     const querySnapshot = await getDocs(q);
@@ -142,7 +147,7 @@
       listingsContainer.appendChild(div);
     });
 
-    // Wait for buttons to render before attaching listeners
+    // Attach delete button event listeners after render
     setTimeout(() => {
       document.querySelectorAll(".delete-btn").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
