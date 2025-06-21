@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const role = userData.role;
 
           if (role === "landlord") {
-            window.location.href = "list-room.html";
+            window.location.href = "landlord-home.html";  // Redirect to new landing page
           } else if (role === "seeker") {
             window.location.href = "listings.html";
           } else {
