@@ -56,7 +56,10 @@
         font-family: 'Segoe UI', sans-serif;
       }
 
-      .welcome-header {
+      /* Hide mobile content on desktop */
+      .welcome-header,
+      main.welcome,
+      footer.mobile-footer {
         display: none;
       }
 
@@ -104,10 +107,21 @@
         line-height: 1.6;
       }
 
-      footer {
+      footer.desktop-footer {
         padding: 30px 0;
         background: #fff;
         text-align: center;
+      }
+    }
+
+    /* Hide desktop layout on smaller screens */
+    @media (max-width: 1023px) {
+      .desktop-layout {
+        display: none;
+      }
+
+      footer.desktop-footer {
+        display: none;
       }
     }
   </style>
@@ -130,7 +144,7 @@
       <a href="signup.html?role=seeker" class="role-button">I am a Room Seeker</a>
     </div>
 
-    <footer>
+    <footer class="desktop-footer">
       © 2025 LocalRoom.co.za. All rights reserved.
     </footer>
   </div>
@@ -152,7 +166,7 @@
   </div>
 </main>
 
-<footer>
+<footer class="mobile-footer">
   © 2025 LocalRoom.co.za. All rights reserved.
 </footer>
 
