@@ -4,9 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* Red rectangular button design */
+    /* Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Role Buttons */
     .role-buttons {
       display: flex;
       gap: 20px;
@@ -38,6 +45,7 @@
       outline: none;
     }
 
+    /* Mobile small screen buttons stacked */
     @media (max-width: 480px) {
       .role-buttons {
         flex-direction: column;
@@ -48,23 +56,22 @@
       }
     }
 
-    /* PC View Only - Left Panel + Main Content */
+    /* === Desktop Layout Styles === */
     @media (min-width: 1024px) {
       body {
         margin: 0;
         padding: 0;
-        font-family: 'Segoe UI', sans-serif;
       }
 
       /* Hide mobile content on desktop */
       .welcome-header,
       main.welcome,
       footer.mobile-footer {
-        display: none;
+        display: none !important;
       }
 
       .desktop-layout {
-        display: flex;
+        display: flex !important;
         min-height: 100vh;
       }
 
@@ -111,17 +118,25 @@
         padding: 30px 0;
         background: #fff;
         text-align: center;
+        display: block;
       }
     }
 
-    /* Hide desktop layout on smaller screens */
+    /* === Mobile & Tablet Layout Styles === */
     @media (max-width: 1023px) {
+      /* Hide desktop layout on smaller screens */
       .desktop-layout {
-        display: none;
+        display: none !important;
       }
 
       footer.desktop-footer {
-        display: none;
+        display: none !important;
+      }
+
+      .welcome-header,
+      main.welcome,
+      footer.mobile-footer {
+        display: block !important;
       }
     }
   </style>
