@@ -1,3 +1,4 @@
+<!-- list-room.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,10 +20,6 @@
 </head>
 <body>
 
-<header class="welcome-header">
-  <h1>LocalRoom</h1>
-</header>
-
 <div class="form-container">
   <h2>List a Room</h2>
   <form id="list-room-form">
@@ -38,8 +35,8 @@
     <label for="features">Features:</label>
     <textarea id="features" required></textarea>
 
-    <label for="images">Add Pictures (up to 6):</label>
-    <input type="file" id="images" accept="image/*" multiple required />
+    <label for="images">Add Pictures (optional, up to 6):</label>
+    <input type="file" id="images" accept="image/*" multiple />
     <div id="preview-container"></div>
 
     <button type="submit">Submit</button>
@@ -52,20 +49,14 @@
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
   import {
-    doc,
-    getDoc,
-    collection,
-    addDoc,
-    serverTimestamp
+    doc, getDoc, collection, addDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
   const form = document.getElementById("list-room-form");
   const imagesInput = document.getElementById("images");
   const previewContainer = document.getElementById("preview-container");
-
   let currentUser = null;
 
-  // Preview selected images
   imagesInput.addEventListener("change", () => {
     previewContainer.innerHTML = "";
     const files = imagesInput.files;
@@ -83,16 +74,15 @@
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      alert("You must be logged in to access this page.");
+      alert("Please log in.");
       window.location.href = "login.html";
       return;
     }
 
     currentUser = user;
-
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists() || userDoc.data().role !== "landlord") {
-      alert("Access denied. Only landlords can list rooms.");
+      alert("Access denied.");
       window.location.href = "listings.html";
     }
   });
@@ -102,33 +92,28 @@
     if (!currentUser) return;
 
     const files = imagesInput.files;
-    if (!files.length) {
-      alert("Please select at least one image.");
-      return;
-    }
+    const imageUrls = [];
+
     if (files.length > 6) {
       alert("You can upload up to 6 images only.");
       return;
     }
 
     try {
-      const imageUrls = [];
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const formData = new FormData();
+          formData.append("file", files[i]);
+          formData.append("upload_preset", "unsigned_preset");
 
-      for (let i = 0; i < files.length; i++) {
-        const formData = new FormData();
-        formData.append("file", files[i]);
-        formData.append("upload_preset", "unsigned_preset");
+          const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
+            method: "POST",
+            body: formData
+          });
 
-        const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
-          method: "POST",
-          body: formData
-        });
-
-        const data = await res.json();
-        if (!data.secure_url) {
-          throw new Error("Cloudinary upload failed.");
+          const data = await res.json();
+          if (data.secure_url) imageUrls.push(data.secure_url);
         }
-        imageUrls.push(data.secure_url);
       }
 
       const room = {
@@ -142,12 +127,12 @@
       };
 
       await addDoc(collection(db, "listings"), room);
-      alert("Room submitted successfully!");
+      alert("Room listed successfully!");
       form.reset();
       previewContainer.innerHTML = "";
     } catch (error) {
-      console.error("Error submitting room:", error);
-      alert("Image upload or room submission failed. Please try again.");
+      console.error("Submit error:", error);
+      alert("Failed to submit listing.");
     }
   });
 </script>
