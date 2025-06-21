@@ -1,7 +1,23 @@
-// signup.js
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { auth, db } from "./firebase-config.js";
+
+// Toast helper function (same as login.js)
+function showToast(message, type = "error") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.classList.add("toast", type);
+  toast.textContent = message;
+
+  container.appendChild(toast);
+
+  // Remove toast after 3 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
@@ -21,9 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const address = document.getElementById("address")?.value.trim() || "";
 
     if (!name || !email.includes("@") || password.length < 6) {
-      alert("Please fill out all required fields correctly.");
+      showToast("Please fill out all required fields correctly.", "error");
       return;
     }
+
+    const submitButton = signupForm.querySelector("button");
+    submitButton.disabled = true;
+    submitButton.textContent = "Signing up...";
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -44,24 +64,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await setDoc(doc(db, "users", user.uid), userData);
 
-      alert("Signup successful!");
+      showToast("Signup successful! Redirecting...", "success");
 
-      // ✅ Guaranteed redirect
       setTimeout(() => {
         if (role === "landlord") {
           window.location.href = "list-room.html";
         } else {
           window.location.href = "listings.html";
         }
-      }, 500);
+      }, 1200);
 
     } catch (error) {
       console.error("Signup error:", error);
       if (error.code === "auth/email-already-in-use") {
-        alert("This email is already registered. Please log in.");
+        showToast("This email is already registered. Please log in.", "error");
       } else {
-        alert("Error: " + error.message);
+        showToast("Error: " + error.message, "error");
       }
+      submitButton.disabled = false;
+      submitButton.textContent = "Sign Up";
     }
   });
 });
