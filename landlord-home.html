@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome Landlord - LocalRoom</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      text-align: center;
+    }
+    button {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 18px;
+      width: 80%;
+      max-width: 300px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #d62828;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome!</h1>
+  <p>Please choose an option:</p>
+
+  <button id="listRoomBtn">➕ List a New Room</button><br />
+  <button id="previewListingsBtn">👀 Preview My Listings</button>
+
+  <script>
+    document.getElementById("listRoomBtn").onclick = () => {
+      window.location.href = "list-room.html";
+    };
+    document.getElementById("previewListingsBtn").onclick = () => {
+      window.location.href = "dashboard.html";
+    };
+  </script>
+</body>
+</html>
