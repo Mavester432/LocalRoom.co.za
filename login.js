@@ -2,6 +2,22 @@ import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/1
 import { auth, db } from "./firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
+function showToast(message, type = "error") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.classList.add("toast", type);
+  toast.textContent = message;
+
+  container.appendChild(toast);
+
+  // Remove toast after 3 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
 
@@ -13,19 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("password").value;
       const loginButton = loginForm.querySelector("button");
 
-      // Disable button to prevent double clicks
       loginButton.disabled = true;
       loginButton.textContent = "Logging in...";
 
-      // Simple validation
       if (!email.includes("@")) {
-        alert("Please enter a valid email.");
+        showToast("Please enter a valid email.", "error");
         loginButton.disabled = false;
         loginButton.textContent = "Login";
         return;
       }
       if (password.length < 6) {
-        alert("Password must be at least 6 characters.");
+        showToast("Password must be at least 6 characters.", "error");
         loginButton.disabled = false;
         loginButton.textContent = "Login";
         return;
@@ -34,32 +48,37 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        console.log("User logged in:", user.uid);
 
-        // Fetch user document from Firestore
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
-          alert("No user data found. Please contact support.");
+          showToast("No user data found. Please contact support.", "error");
+          loginButton.disabled = false;
+          loginButton.textContent = "Login";
           return;
         }
 
         const userData = userDoc.data();
         const role = userData.role;
 
-        console.log("User role:", role);
-
         if (role === "landlord") {
-          window.location.href = "landlord-home.html";
+          showToast("Login successful! Redirecting...", "success");
+          setTimeout(() => {
+            window.location.href = "landlord-home.html";
+          }, 1200);
         } else if (role === "seeker") {
-          window.location.href = "listings.html";
+          showToast("Login successful! Redirecting...", "success");
+          setTimeout(() => {
+            window.location.href = "listings.html";
+          }, 1200);
         } else {
-          alert("Unknown role. Please contact support.");
+          showToast("Unknown role. Please contact support.", "error");
+          loginButton.disabled = false;
+          loginButton.textContent = "Login";
         }
 
       } catch (error) {
-        console.error("Login error:", error);
         let message = "Login failed.";
         if (error.code === "auth/user-not-found") {
           message = "No user found with this email.";
@@ -68,8 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (error.code === "auth/invalid-email") {
           message = "Invalid email format.";
         }
-        alert(message);
-      } finally {
+        showToast(message, "error");
         loginButton.disabled = false;
         loginButton.textContent = "Login";
       }
