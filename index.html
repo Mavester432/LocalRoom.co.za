@@ -13,72 +13,16 @@
       font-family: 'Segoe UI', sans-serif;
     }
 
-    /* Role Buttons */
-    .role-buttons {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 2rem;
-    }
-
-    .role-button {
-      flex: 1 1 180px;
-      padding: 15px 30px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: white;
-      background-color: #FF3B30;
-      border: none;
-      border-radius: 0;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      box-shadow: 0 3px 6px rgba(255, 59, 48, 0.4);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .role-button:hover,
-    .role-button:focus {
-      background-color: #cc2a23;
-      box-shadow: 0 5px 12px rgba(204, 42, 35, 0.6);
-      outline: none;
-    }
-
-    /* Mobile small screen buttons stacked but NOT stretched full width */
-    @media (max-width: 480px) {
-      .role-buttons {
-        flex-direction: column;
-        align-items: center; /* center buttons */
-        gap: 15px;
-      }
-
-      .role-button {
-        flex: none;
-        width: auto;
-        min-width: 180px;
-        max-width: 240px;
-        padding: 12px 25px;
-        margin: 0 auto;
-      }
+    body, html {
+      height: 100%;
+      background-color: #f4f6f8;
+      color: #333;
     }
 
     /* === Desktop Layout Styles === */
     @media (min-width: 1024px) {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Hide mobile content on desktop */
-      .welcome-header,
-      main.welcome,
-      footer.mobile-footer {
-        display: none !important;
-      }
-
       .desktop-layout {
-        display: flex !important;
+        display: flex;
         min-height: 100vh;
       }
 
@@ -95,7 +39,6 @@
 
       .left-panel h2 {
         font-size: 2rem;
-        color: white;
         text-align: center;
       }
 
@@ -127,11 +70,17 @@
         text-align: center;
         display: block;
       }
+
+      /* Hide mobile content on desktop */
+      .welcome-header,
+      main.welcome,
+      footer.mobile-footer {
+        display: none !important;
+      }
     }
 
     /* === Mobile & Tablet Layout Styles === */
     @media (max-width: 1023px) {
-      /* Hide desktop layout on smaller screens */
       .desktop-layout {
         display: none !important;
       }
@@ -144,6 +93,73 @@
       main.welcome,
       footer.mobile-footer {
         display: block !important;
+      }
+
+      .welcome-header {
+        text-align: center;
+        padding: 20px 0 0;
+        font-size: 1.5rem;
+      }
+
+      main.welcome {
+        min-height: calc(100vh - 100px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+      }
+
+      main.welcome h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+        color: #FF3B30;
+      }
+
+      main.welcome p {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 15px;
+        max-width: 90%;
+      }
+
+      .role-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .role-button {
+        width: 100%;
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background-color: #FF3B30;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        border-radius: 4px;
+        box-shadow: 0 3px 6px rgba(255, 59, 48, 0.4);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .role-button:hover,
+      .role-button:focus {
+        background-color: #cc2a23;
+        box-shadow: 0 5px 12px rgba(204, 42, 35, 0.6);
+        outline: none;
+      }
+
+      footer.mobile-footer {
+        text-align: center;
+        font-size: 0.9rem;
+        padding: 20px;
+        color: #888;
       }
     }
   </style>
