@@ -14,6 +14,7 @@
       margin: 20px auto 10px;
       padding: 0 10px;
     }
+
     .top-bar button {
       background: #e63946;
       color: white;
@@ -24,6 +25,7 @@
       font-weight: 600;
       transition: background-color 0.3s ease;
     }
+
     .top-bar button:hover {
       background: #d62828;
     }
@@ -33,6 +35,7 @@
       flex-wrap: wrap;
       margin-bottom: 10px;
     }
+
     .room-images img {
       max-width: 100px;
       margin-right: 5px;
@@ -40,6 +43,7 @@
       border-radius: 5px;
       object-fit: cover;
     }
+
     .room-card {
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -48,6 +52,7 @@
       max-width: 600px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
     button.contact-btn {
       background: #e63946;
       color: white;
@@ -57,6 +62,7 @@
       cursor: pointer;
       margin-top: 10px;
     }
+
     button.contact-btn:hover {
       background: #d62828;
     }
@@ -64,104 +70,107 @@
 </head>
 <body>
 
-<div class="top-bar">
-  <button id="homeBtn">🏠 Home</button>
-  <button id="logoutBtn">Logout</button>
-</div>
+  <div class="top-bar">
+    <button id="homeBtn">🏠 Home</button>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-<header class="welcome-header">
-  <h1 style="text-align:center;">LocalRoom</h1>
-</header>
+  <header class="welcome-header">
+    <h1 style="text-align:center;">LocalRoom</h1>
+  </header>
 
-<main>
-  <h2 style="text-align: center;">Available Rooms</h2>
-  <input
-    type="text"
-    id="filter"
-    placeholder="Search by location or title..."
-    style="margin: 20px auto; display: block; padding: 10px; width: 80%; max-width: 400px;"
-  />
+  <main>
+    <h2 style="text-align: center;">Available Rooms</h2>
+    <input
+      type="text"
+      id="filter"
+      placeholder="Search by location or title..."
+      style="margin: 20px auto; display: block; padding: 10px; width: 80%; max-width: 400px;"
+    />
 
-  <div class="listings-container"></div>
-</main>
+    <div class="listings-container"></div>
+  </main>
 
-<script type="module">
-  import { auth } from "./firebase-config.js";
-  import {
-    collection,
-    getDocs,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  <script type="module">
+    import { db, auth } from "./firebase-config.js";
+    import {
+      collection,
+      getDocs,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-  const container = document.querySelector(".listings-container");
-  const filterInput = document.getElementById("filter");
-  const homeBtn = document.getElementById("homeBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
+    const container = document.querySelector(".listings-container");
+    const filterInput = document.getElementById("filter");
+    const homeBtn = document.getElementById("homeBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-  let allRooms = [];
+    let allRooms = [];
 
-  async function fetchRooms() {
-    const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-
-    allRooms = querySnapshot.docs.map((doc) => doc.data());
-    displayListings(allRooms);
-  }
-
-  function displayListings(list) {
-    container.innerHTML = "";
-
-    if (list.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>No rooms found.</p>";
-      return;
+    async function fetchRooms() {
+      try {
+        const q = query(collection(db, "rooms"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        allRooms = querySnapshot.docs.map((doc) => doc.data());
+        displayListings(allRooms);
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+        container.innerHTML = "<p style='text-align:center; color: red;'>Failed to load rooms.</p>";
+      }
     }
 
-    list.forEach((room) => {
-      const card = document.createElement("div");
-      card.className = "room-card";
+    function displayListings(list) {
+      container.innerHTML = "";
 
-      // Generate HTML for all images
-      const imagesHtml = (room.images || []).map(url =>
-        `<img src="${url}" alt="Room image" />`
-      ).join("");
+      if (list.length === 0) {
+        container.innerHTML = "<p style='text-align:center;'>No rooms found.</p>";
+        return;
+      }
 
-      card.innerHTML = `
-        <div class="room-images">${imagesHtml}</div>
-        <h3>${room.title}</h3>
-        <p>${room.location} – R${room.price}/month</p>
-        <p>${room.features}</p>
-        <button class="contact-btn">Contact Landlord</button>
-      `;
+      list.forEach((room) => {
+        const card = document.createElement("div");
+        card.className = "room-card";
 
-      container.appendChild(card);
+        const imagesHtml = (room.images || []).map(url =>
+          `<img src="${url}" alt="Room image" />`
+        ).join("");
+
+        card.innerHTML = `
+          <div class="room-images">${imagesHtml}</div>
+          <h3>${room.title || "Untitled Room"}</h3>
+          <p>${room.location || "Unknown location"} – R${room.price || "?"}/month</p>
+          <p>${room.features || ""}</p>
+          <button class="contact-btn">Contact Landlord</button>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    filterInput.addEventListener("input", () => {
+      const value = filterInput.value.toLowerCase();
+      const filtered = allRooms.filter((room) =>
+        (room.title || "").toLowerCase().includes(value) ||
+        (room.location || "").toLowerCase().includes(value)
+      );
+      displayListings(filtered);
     });
-  }
 
-  filterInput.addEventListener("input", () => {
-    const value = filterInput.value.toLowerCase();
-    const filtered = allRooms.filter((room) =>
-      room.title.toLowerCase().includes(value) ||
-      room.location.toLowerCase().includes(value)
-    );
-    displayListings(filtered);
-  });
+    homeBtn.addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
 
-  homeBtn.addEventListener("click", () => {
-    window.location.href = "index.html";
-  });
+    logoutBtn.addEventListener("click", async () => {
+      const confirmed = confirm("Are you sure you want to logout?");
+      if (confirmed) {
+        await signOut(auth);
+        window.location.href = "login.html";
+      }
+    });
 
-  logoutBtn.addEventListener("click", async () => {
-    const confirmed = confirm("Are you sure you want to logout?");
-    if (confirmed) {
-      await signOut(auth);
-      window.location.href = "login.html";
-    }
-  });
-
-  fetchRooms();
-</script>
+    fetchRooms(); // Load rooms when page loads
+  </script>
 
 </body>
 </html>
