@@ -74,7 +74,8 @@
     <div>
       <a href="index.html" class="home-btn">🏠 Home</a>
       <a href="list-room.html"><button>➕ List New Room</button></a>
-      <a href="inbox.html" class="dashboard-btn">📥 Inbox</a> <!-- NEW Inbox Button -->
+      <!-- Changed from <a> to <button> for Inbox -->
+      <button id="inboxBtn" class="dashboard-btn">📥 Inbox</button>
       <button id="logout">Logout</button>
     </div>
   </div>
@@ -101,17 +102,21 @@
   const listingsContainer = document.getElementById("listings");
   const logoutBtn = document.getElementById("logout");
   const welcomeMessage = document.getElementById("welcomeMessage");
+  const inboxBtn = document.getElementById("inboxBtn");
+
+  // Named beforeUnload handler so we can remove it
+  function beforeUnloadHandler(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+
+  // Add beforeunload listener
+  window.addEventListener("beforeunload", beforeUnloadHandler);
 
   // Logout handler
   logoutBtn.addEventListener("click", async () => {
     await signOut(auth);
     window.location.href = "login.html";
-  });
-
-  // Warn on back navigation / page unload (like pressing back button)
-  window.addEventListener("beforeunload", function (e) {
-    e.preventDefault();
-    e.returnValue = '';
   });
 
   // Optional: For SPA style back button interception:
@@ -126,6 +131,17 @@
       // Prevent back navigation by pushing the state again
       window.history.pushState(null, "", window.location.href);
     }
+  });
+
+  // Inbox button click handler with confirmation and unload listener removal
+  inboxBtn.addEventListener('click', () => {
+    const leave = confirm("You are about to leave the dashboard. Continue?");
+    if (leave) {
+      // Remove beforeunload listener to avoid confirmation on next page
+      window.removeEventListener("beforeunload", beforeUnloadHandler);
+      window.location.href = "inbox.html";
+    }
+    // If cancelled, do nothing and stay on dashboard
   });
 
   onAuthStateChanged(auth, async (user) => {
