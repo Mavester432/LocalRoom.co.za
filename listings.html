@@ -110,7 +110,7 @@
 
     async function fetchRooms() {
       try {
-        const q = query(collection(db, "rooms"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         allRooms = querySnapshot.docs.map((doc) => doc.data());
         displayListings(allRooms);
@@ -169,7 +169,7 @@
       }
     });
 
-    fetchRooms(); // Load rooms when page loads
+    fetchRooms(); // Load rooms on page load
   </script>
 
 </body>
