@@ -16,6 +16,7 @@
       padding: 15px;
       margin-bottom: 20px;
       border-radius: 8px;
+      position: relative;
     }
     .listing img {
       max-width: 120px;
@@ -64,6 +65,39 @@
     .delete-btn:hover {
       background-color: #666;
     }
+    /* Contact options dropdown */
+    .contact-options-container {
+      position: relative;
+      display: inline-block;
+    }
+    .contact-options {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      top: 35px;
+      left: 0;
+      z-index: 10;
+      width: 180px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .contact-options a {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .contact-options a.whatsapp {
+      color: #25D366;
+    }
+    .contact-options a.email {
+      color: #1e90ff;
+    }
+    .contact-options a:last-child {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 <body>
@@ -74,7 +108,6 @@
     <div>
       <a href="index.html" class="home-btn">🏠 Home</a>
       <a href="list-room.html"><button>➕ List New Room</button></a>
-      <!-- Inbox button removed -->
       <button id="logout">Logout</button>
     </div>
   </div>
@@ -102,20 +135,18 @@
   const logoutBtn = document.getElementById("logout");
   const welcomeMessage = document.getElementById("welcomeMessage");
 
-  // Named beforeUnload handler so we can remove it if needed
-  function beforeUnloadHandler(e) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
-
-  // Add beforeunload listener
-  window.addEventListener("beforeunload", beforeUnloadHandler);
-
   // Logout handler
   logoutBtn.addEventListener("click", async () => {
     await signOut(auth);
     window.location.href = "login.html";
   });
+
+  // Warn on back navigation / page unload (like pressing back button)
+  function beforeUnloadHandler(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+  window.addEventListener("beforeunload", beforeUnloadHandler);
 
   // Optional: For SPA style back button interception:
   window.history.pushState(null, "", window.location.href);
@@ -126,7 +157,6 @@
         window.location.href = "index.html";
       });
     } else {
-      // Prevent back navigation by pushing the state again
       window.history.pushState(null, "", window.location.href);
     }
   });
@@ -160,6 +190,15 @@
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const docId = docSnap.id;
+
+      // Build Contact Landlord buttons with WhatsApp and Email links
+      const whatsappLink = data.whatsappNumber
+        ? `https://wa.me/${data.whatsappNumber}`
+        : "#";
+      const emailLink = data.email
+        ? `mailto:${data.email}`
+        : "#";
+
       const div = document.createElement("div");
       div.classList.add("listing");
 
@@ -173,6 +212,15 @@
         <div style="margin-top: 10px;">
           <button class="edit-btn" onclick="window.location.href='edit-room.html?id=${docId}'">✏️ Edit</button>
           <button class="delete-btn" data-id="${docId}">🗑 Delete</button>
+        </div>
+        <div style="margin-top: 10px;">
+          <div class="contact-options-container">
+            <button class="contact-btn">Contact Landlord</button>
+            <div class="contact-options">
+              <a href="${whatsappLink}" target="_blank" rel="noopener" class="whatsapp">📱 WhatsApp</a>
+              <a href="${emailLink}" class="email">📧 Email</a>
+            </div>
+          </div>
         </div>
       `;
 
@@ -197,6 +245,26 @@
           }
         });
       });
+
+      // Attach contact button toggle listeners
+      document.querySelectorAll(".contact-btn").forEach(button => {
+        button.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const container = button.parentElement;
+          const options = container.querySelector(".contact-options");
+          const isVisible = options.style.display === "block";
+          // Hide all others first
+          document.querySelectorAll(".contact-options").forEach(o => o.style.display = "none");
+          // Toggle current
+          options.style.display = isVisible ? "none" : "block";
+        });
+      });
+
+      // Hide contact options if clicked outside
+      document.addEventListener("click", () => {
+        document.querySelectorAll(".contact-options").forEach(o => o.style.display = "none");
+      });
+
     }, 200);
   });
 </script>
