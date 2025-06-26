@@ -66,6 +66,58 @@
     button.contact-btn:hover {
       background: #d62828;
     }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      height: 100px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-buttons button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .send-btn {
+      background: #1e90ff;
+      color: white;
+    }
+
+    .cancel-btn {
+      background: #ccc;
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +143,18 @@
     <div class="listings-container"></div>
   </main>
 
+  <!-- Modal -->
+  <div class="modal" id="contactModal">
+    <div class="modal-content">
+      <h3>Send a Message to the Landlord</h3>
+      <textarea id="messageInput" placeholder="Write your message here..."></textarea>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="cancelModal">Cancel</button>
+        <button class="send-btn" id="sendMessage">Send</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { db, auth } from "./firebase-config.js";
     import {
@@ -105,6 +169,11 @@
     const filterInput = document.getElementById("filter");
     const homeBtn = document.getElementById("homeBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+
+    const modal = document.getElementById("contactModal");
+    const cancelModal = document.getElementById("cancelModal");
+    const sendBtn = document.getElementById("sendMessage");
+    const messageInput = document.getElementById("messageInput");
 
     let allRooms = [];
 
@@ -136,13 +205,22 @@
           `<img src="${url}" alt="Room image" />`
         ).join("");
 
+        const landlordId = room.landlordId || "";
+
         card.innerHTML = `
           <div class="room-images">${imagesHtml}</div>
           <h3>${room.title || "Untitled Room"}</h3>
           <p>${room.location || "Unknown location"} – R${room.price || "?"}/month</p>
           <p>${room.features || ""}</p>
-          <button class="contact-btn">Contact Landlord</button>
+          <button class="contact-btn" data-landlord="${landlordId}">Contact Landlord</button>
         `;
+
+        card.querySelector(".contact-btn").addEventListener("click", (e) => {
+          const btn = e.target;
+          const landlordId = btn.dataset.landlord;
+          modal.style.display = "flex";
+          sendBtn.dataset.landlord = landlordId;
+        });
 
         container.appendChild(card);
       });
@@ -157,6 +235,27 @@
       displayListings(filtered);
     });
 
+    cancelModal.addEventListener("click", () => {
+      modal.style.display = "none";
+      messageInput.value = "";
+    });
+
+    sendBtn.addEventListener("click", () => {
+      const message = messageInput.value.trim();
+      const landlordId = sendBtn.dataset.landlord;
+
+      if (message === "") {
+        alert("Message cannot be empty.");
+        return;
+      }
+
+      // Future: Save message to Firestore or trigger email
+      alert("Message sent to landlord (not yet implemented).");
+
+      modal.style.display = "none";
+      messageInput.value = "";
+    });
+
     homeBtn.addEventListener("click", () => {
       window.location.href = "index.html";
     });
@@ -169,7 +268,7 @@
       }
     });
 
-    fetchRooms(); // Load rooms on page load
+    fetchRooms();
   </script>
 
 </body>
