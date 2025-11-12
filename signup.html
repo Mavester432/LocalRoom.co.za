@@ -66,9 +66,91 @@
   </div>
 </div>
 
-<!-- Firebase + Signup -->
-<script type="module" src="firebase-config.js"></script>
-<script type="module" src="signup.js"></script>
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Firebase Setup -->
+<script type="module">
+  // Import Firebase SDK modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqTJ7hNrVqO_mJ4cfqb5fOj-pvqzq7qII",
+    authDomain: "localroomapp.firebaseapp.com",
+    projectId: "localroomapp",
+    storageBucket: "localroomapp.firebasestorage.app",
+    messagingSenderId: "232945388743",
+    appId: "1:232945388743:web:089083c9f60269406c02e2",
+    measurementId: "G-XBC1GV59MF"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const analytics = getAnalytics(app);
+
+  console.log("✅ Firebase initialized successfully:", app.name);
+
+  // --- SIGNUP LOGIC STARTS HERE ---
+  import {
+    createUserWithEmailAndPassword,
+    updateProfile
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import {
+    doc,
+    setDoc
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+  const form = document.getElementById("signup-form");
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get("role") || "seeker";
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const phone = document.getElementById("phone")?.value || "";
+    const business = document.getElementById("business")?.value || "";
+    const address = document.getElementById("address")?.value || "";
+
+    try {
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Update display name
+      await updateProfile(user, { displayName: name });
+
+      // Save user data to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name,
+        email,
+        role,
+        phone,
+        business,
+        address,
+        createdAt: new Date().toISOString()
+      });
+
+      alert("✅ Signup successful! Redirecting...");
+      if (role === "landlord") {
+        window.location.href = "list-room.html";
+      } else {
+        window.location.href = "listings.html";
+      }
+
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("❌ " + error.message);
+    }
+  });
+</script>
 
 <!-- Role Logic -->
 <script>
@@ -87,7 +169,7 @@
     loginLink.href = "login.html?role=seeker";
   }
 
-  // Back button confirmation (simulating logout warning)
+  // Back button confirmation
   window.onpopstate = function () {
     const confirmExit = confirm("You are about to leave or cancel signup. Continue?");
     if (confirmExit) {
@@ -98,9 +180,6 @@
   };
   history.pushState(null, "", location.href);
 </script>
-
-<!-- Toast container -->
-<div id="toast-container" class="toast-container"></div>
 
 </body>
 </html>
