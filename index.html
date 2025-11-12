@@ -1,68 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LocalRoom</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LocalRoom</title>
 
-<style>
-/* ===== Reset & Layout ===== */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body, html { height: 100%; background: #f4f6f8; color: #333; }
-.desktop-layout { display: flex; min-height: 100vh; }
-.left-panel { width: 20%; background:#1e1e1e; color:white; display:flex; flex-direction: column; align-items:center; justify-content:center; padding:30px; }
-.left-panel h2 { font-size:2rem; text-align:center; }
-.main-content { width:80%; padding:60px 40px; display:flex; flex-direction:column; justify-content:center; text-align:center; }
-.main-content h1 { font-size:3rem; color:#FF3B30; margin-bottom:1rem; }
-.main-content p { font-size:1.2rem; margin-bottom:1rem; line-height:1.6; max-width:700px; margin-left:auto; margin-right:auto; }
-.role-buttons button { margin:10px; padding:15px 30px; background:#FF3B30; color:white; border:none; border-radius:25px; font-weight:bold; cursor:pointer; transition:0.3s; }
-.role-buttons button:hover { background:#cc2a23; }
-footer.desktop-footer { padding:30px 0; background:#fff; text-align:center; }
-.welcome-header, main.welcome, footer.mobile-footer { display:none; }
+  <!-- CSS (inline for simplicity, can move to style.css) -->
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; font-family:'Segoe UI', sans-serif;}
+    body, html {height:100%; background:#f4f6f8; color:#333;}
 
-/* Mobile */
-@media (max-width:1023px){
-.desktop-layout { display:none !important; }
-.welcome-header, main.welcome, footer.mobile-footer { display:block; }
-.welcome-header { text-align:center; padding:20px 0; font-size:1.5rem; }
-main.welcome { min-height:calc(100vh - 100px); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; }
-main.welcome h1 { font-size:2rem; color:#FF3B30; margin-bottom:20px; }
-main.welcome p { font-size:1rem; color:#666; margin-bottom:15px; max-width:90%; }
-.role-buttons { display:flex; flex-direction:column; align-items:center; gap:15px; margin-top:20px; width:100%; max-width:300px; }
-.role-button { width:100%; padding:15px 0; font-size:1.1rem; font-weight:600; background:#FF3B30; color:white; text-align:center; border-radius:25px; box-shadow:0 3px 6px rgba(255,59,48,0.4); border:none; cursor:pointer; }
-.role-button:hover { background:#cc2a23; box-shadow:0 5px 12px rgba(204,42,35,0.6); }
-.room-slider { margin-top:20px; overflow:hidden; width:100%; max-width:350px; }
-.slides { display:flex; transition: transform 0.5s ease-in-out; }
-.slide { min-width:80%; margin-right:10px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-.slide img { width:100%; height:150px; object-fit:cover; }
-.slide-info { padding:10px; font-size:0.9rem; color:#333; }
-footer.mobile-footer { text-align:center; font-size:0.9rem; padding:20px; color:#888; }
-}
+    /* Desktop Layout */
+    @media (min-width:1024px){
+      .desktop-layout { display:flex; min-height:100vh;}
+      .left-panel { width:20%; background:#1e1e1e; color:#fff; display:flex; align-items:center; justify-content:center; flex-direction:column; padding:30px;}
+      .left-panel h2 {font-size:2rem; text-align:center;}
+      .main-content {width:80%; padding:60px 40px; display:flex; flex-direction:column; justify-content:center; text-align:center;}
+      .main-content h1 {font-size:3rem; margin-bottom:1rem; color:#FF3B30;}
+      .main-content p {font-size:1.2rem; max-width:700px; margin:0 auto 1rem; line-height:1.6;}
+      .role-buttons a{display:inline-block; margin:10px; padding:15px 30px; background:#FF3B30; color:white; text-decoration:none; border-radius:25px; font-weight:bold; transition:0.3s;}
+      .role-buttons a:hover{background:#cc2a23;}
+      footer.desktop-footer {padding:30px 0; background:#fff; text-align:center; display:block;}
+      .welcome-header, main.welcome, footer.mobile-footer{display:none !important;}
+    }
 
-/* Modal */
-.modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:10; }
-.modal-content { background:white; width:90%; max-width:400px; padding:20px; border-radius:10px; position:relative; }
-.close-btn { position:absolute; top:10px; right:15px; font-size:1.5rem; cursor:pointer; }
-.modal-tabs { display:flex; margin-bottom:15px; }
-.modal-tabs button { flex:1; padding:10px; cursor:pointer; background:#f1f1f1; border:none; font-weight:bold; transition:0.3s; }
-.modal-tabs button.active { background:#FF3B30; color:white; }
-.modal form { display:flex; flex-direction:column; }
-.modal input { margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc; }
-.modal button.submit-btn { background:#FF3B30; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; }
-a { text-decoration:none; color:inherit; }
-</style>
+    /* Mobile Layout */
+    @media(max-width:1023px){
+      .desktop-layout{display:none !important;}
+      footer.desktop-footer{display:none !important;}
+      .welcome-header, main.welcome, footer.mobile-footer{display:block !important;}
+      .welcome-header{padding:20px 0; text-align:center; font-size:1.5rem;}
+      main.welcome{min-height:calc(100vh-100px); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
+      main.welcome h1{font-size:2rem; margin-bottom:20px; color:#FF3B30;}
+      main.welcome p{font-size:1rem; color:#666; margin-bottom:15px; max-width:90%;}
+      .role-buttons{display:flex; flex-direction:column; gap:15px; margin-top:20px; width:100%; max-width:300px;}
+      .role-button{width:100%; padding:15px 0; font-size:1.1rem; font-weight:600; background:#FF3B30; color:white; text-align:center; border-radius:25px; box-shadow:0 3px 6px rgba(255,59,48,0.4); border:none; cursor:pointer;}
+      .role-button:hover,.role-button:focus{background:#cc2a23; box-shadow:0 5px 12px rgba(204,42,35,0.6);}
+      .room-slider{margin-top:20px; overflow:hidden; width:100%; max-width:350px;}
+      .slides{display:flex; transition:0.5s ease-in-out;}
+      .slide{min-width:80%; margin-right:10px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+      .slide img{width:100%; height:150px; object-fit:cover;}
+      .slide-info{padding:10px; font-size:0.9rem; color:#333;}
+      footer.mobile-footer{text-align:center; font-size:0.9rem; padding:20px; color:#888;}
+    }
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    /* Modal */
+    .modal{display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:10;}
+    .modal-content{background:white; width:90%; max-width:400px; padding:20px; border-radius:10px; position:relative;}
+    .close-btn{position:absolute; top:10px; right:15px; font-size:1.5rem; cursor:pointer;}
+    .modal-tabs{display:flex; margin-bottom:15px;}
+    .modal-tabs button{flex:1; padding:10px; cursor:pointer; background:#f1f1f1; border:none; font-weight:bold; transition:0.3s;}
+    .modal-tabs button.active{background:#FF3B30; color:white;}
+    .modal form{display:flex; flex-direction:column;}
+    .modal input{margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc;}
+    .modal button.submit-btn{background:#FF3B30; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer;}
+  </style>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqTJ7hNrVqO_mJ4cfqb5fOj-pvqzq7qII",
+      authDomain: "localroomapp.firebaseapp.com",
+      projectId: "localroomapp",
+      storageBucket: "localroomapp.firebasestorage.app",
+      messagingSenderId: "232945388743",
+      appId: "1:232945388743:web:089083c9f60269406c02e2",
+      measurementId: "G-XBC1GV59MF"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+  </script>
 
 </head>
 <body>
 
 <!-- Desktop -->
 <div class="desktop-layout">
-  <aside class="left-panel"><h2>LocalRoom</h2></aside>
+  <aside class="left-panel">
+    <h2>LocalRoom</h2>
+  </aside>
   <div class="main-content">
     <h1>Welcome to LocalRoom</h1>
     <p>Your one-stop platform to find the perfect room or rent out your space.</p>
@@ -78,14 +101,22 @@ a { text-decoration:none; color:inherit; }
 <header class="welcome-header"><h1>LocalRoom</h1></header>
 <main class="welcome">
   <h1>Welcome to LocalRoom</h1>
-  <p>Your one-stop platform to find the perfect room or rent out your space.</p>
+  <p>Find or list rooms easily.</p>
+
   <div class="role-buttons">
     <button class="role-button" data-role="landlord">I am a Landlord</button>
     <button class="role-button" data-role="seeker">I am a Room Seeker</button>
   </div>
-  <div class="room-slider"><div class="slides"></div></div>
-</main>
 
+  <!-- Room Slider (example, replace with dynamic images later) -->
+  <div class="room-slider">
+    <div class="slides">
+      <div class="slide"><img src="ROOM_IMAGE_1_URL"><div class="slide-info">Room 1 • R2500/month</div></div>
+      <div class="slide"><img src="ROOM_IMAGE_2_URL"><div class="slide-info">Room 2 • R3000/month</div></div>
+      <div class="slide"><img src="ROOM_IMAGE_3_URL"><div class="slide-info">Room 3 • R2800/month</div></div>
+    </div>
+  </div>
+</main>
 <footer class="mobile-footer">© 2025 LocalRoom.co.za</footer>
 
 <!-- Modal -->
@@ -96,138 +127,76 @@ a { text-decoration:none; color:inherit; }
       <button class="active" id="loginTab">Login</button>
       <button id="signupTab">Sign Up</button>
     </div>
+
     <form id="loginForm">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
+      <input type="email" placeholder="Email" required id="loginEmail">
+      <input type="password" placeholder="Password" required id="loginPassword">
       <button type="submit" class="submit-btn">Login</button>
     </form>
+
     <form id="signupForm" style="display:none;">
-      <input type="text" placeholder="Full Name" required>
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <input type="text" placeholder="Phone Number" required>
-      <input type="text" placeholder="Address" required>
-      <input type="text" placeholder="Business Name (optional)">
+      <input type="text" placeholder="Full Name" required id="signupName">
+      <input type="email" placeholder="Email" required id="signupEmail">
+      <input type="password" placeholder="Password" required id="signupPassword">
       <button type="submit" class="submit-btn">Sign Up</button>
     </form>
   </div>
 </div>
 
+<!-- Scripts -->
 <script>
-// ===== Firebase Config =====
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MSG_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// ===== Modal =====
-const modal = document.getElementById('authModal');
-const roleButtons = document.querySelectorAll('.role-button');
-const loginTab = document.getElementById('loginTab');
-const signupTab = document.getElementById('signupTab');
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-
-roleButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    window.userRole = btn.dataset.role;
-    modal.style.display = 'flex';
-    loginForm.style.display = 'flex';
-    signupForm.style.display = 'none';
-    loginTab.classList.add('active');
-    signupTab.classList.remove('active');
-    loginForm.querySelector('input').focus();
-  });
-});
-
-document.querySelector('.close-btn').addEventListener('click', () => modal.style.display='none');
-
-loginTab.addEventListener('click', () => {
-  loginForm.style.display='flex'; signupForm.style.display='none';
-  loginTab.classList.add('active'); signupTab.classList.remove('active');
-  loginForm.querySelector('input').focus();
-});
-signupTab.addEventListener('click', () => {
-  loginForm.style.display='none'; signupForm.style.display='flex';
-  signupTab.classList.add('active'); loginTab.classList.remove('active');
-  signupForm.querySelector('input').focus();
-});
-
-// ===== Login =====
-loginForm.addEventListener('submit', e=>{
-  e.preventDefault();
-  const email = loginForm.querySelector('input[type="email"]').value;
-  const password = loginForm.querySelector('input[type="password"]').value;
-  auth.signInWithEmailAndPassword(email,password)
-    .then(userCred=>{
-      const user=userCred.user;
-      alert(`Login successful: ${user.email}`);
-      modal.style.display='none';
-      if(window.userRole==='landlord') window.location.href='list-room.html';
-      else window.location.href='listings.html';
-    })
-    .catch(err=>alert('Login failed: '+err.message));
-});
-
-// ===== Signup =====
-signupForm.addEventListener('submit', e=>{
-  e.preventDefault();
-  const name = signupForm.querySelector('input[placeholder="Full Name"]').value;
-  const email = signupForm.querySelector('input[placeholder="Email"]').value;
-  const password = signupForm.querySelector('input[placeholder="Password"]').value;
-  const phone = signupForm.querySelector('input[placeholder="Phone Number"]').value;
-  const address = signupForm.querySelector('input[placeholder="Address"]').value;
-  const business = signupForm.querySelector('input[placeholder="Business Name (optional)"]').value;
-
-  auth.createUserWithEmailAndPassword(email,password)
-    .then(userCred=>{
-      const user=userCred.user;
-      db.collection('users').doc(user.uid).set({
-        fullName: name,
-        email: email,
-        role: window.userRole,
-        phone,
-        address,
-        business,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('Signup successful!');
-      modal.style.display='none';
-      if(window.userRole==='landlord') window.location.href='list-room.html';
-      else window.location.href='listings.html';
-    })
-    .catch(err=>alert('Signup failed: '+err.message));
-});
-
-// ===== Load Rooms =====
-const slidesContainer=document.querySelector('.slides');
-db.collection('listings').orderBy('createdAt','desc').limit(5).get()
-  .then(snapshot=>{
-    snapshot.forEach(doc=>{
-      const room=doc.data();
-      const slide=document.createElement('div');
-      slide.classList.add('slide');
-      slide.innerHTML=`<img src="${room.imageURL}" alt="${room.title}"><div class="slide-info"><h3>${room.title}</h3><p>R${room.price}/month • ${room.city}</p></div>`;
-      slidesContainer.appendChild(slide);
+  // Modal logic
+  const modal = document.getElementById('authModal');
+  const buttons = document.querySelectorAll('.role-button');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', ()=> {
+      modal.style.display = 'flex';
+      window.userRole = btn.dataset.role;
+      console.log("Selected role:", window.userRole);
     });
-  }).catch(err=>console.error(err));
+  });
+  document.querySelector('.close-btn').addEventListener('click', ()=> modal.style.display='none');
 
-// ===== Slider Auto-play =====
-let index=0;
-setInterval(()=>{
-  const total=document.querySelectorAll('.slide').length;
-  if(total===0) return;
-  index++; if(index>=total) index=0;
-  slidesContainer.style.transform=`translateX(-${index*85}%)`;
-},4000);
+  // Tabs
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
 
+  loginTab.addEventListener('click', ()=>{loginForm.style.display='flex'; signupForm.style.display='none'; loginTab.classList.add('active'); signupTab.classList.remove('active');});
+  signupTab.addEventListener('click', ()=>{loginForm.style.display='none'; signupForm.style.display='flex'; signupTab.classList.add('active'); loginTab.classList.remove('active');});
+
+  // Firebase Auth
+  loginForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      alert("Login successful!");
+      modal.style.display='none';
+    } catch(err){ alert("Login failed: "+err.message);}
+  });
+
+  signupForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    try {
+      const userCred = await auth.createUserWithEmailAndPassword(email,password);
+      await db.collection("users").doc(userCred.user.uid).set({name:name,email:email,role:window.userRole});
+      alert("Sign up successful!");
+      modal.style.display='none';
+    } catch(err){ alert("Sign up failed: "+err.message);}
+  });
+
+  // Room slider auto-play
+  const slides = document.querySelector('.slides');
+  const totalSlides = document.querySelectorAll('.slide').length;
+  let index=0;
+  setInterval(()=>{ index++; if(index>=totalSlides) index=0; slides.style.transform=`translateX(-${index*85}%)`; }, 4000);
 </script>
+
 </body>
 </html>
