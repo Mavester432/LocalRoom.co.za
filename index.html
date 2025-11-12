@@ -12,40 +12,14 @@ body, html { height: 100%; background-color: #f4f6f8; color: #333; }
 /* ===== Desktop Layout ===== */
 @media (min-width: 1024px) {
   .desktop-layout { display: flex; min-height: 100vh; }
-  .left-panel {
-    width: 20%;
-    background-color: #1e1e1e;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-  }
+  .left-panel { width: 20%; background-color: #1e1e1e; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
   .left-panel h2 { font-size: 2rem; text-align: center; }
 
-  .main-content {
-    width: 80%;
-    padding: 60px 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-  }
+  .main-content { width: 80%; padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
   .main-content h1 { font-size: 3rem; margin-bottom: 1rem; color: #FF3B30; }
   .main-content p { font-size: 1.2rem; max-width: 700px; margin: 0 auto 1rem; line-height: 1.6; }
 
-  .role-buttons button {
-    margin: 10px;
-    padding: 15px 30px;
-    background-color: #FF3B30;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
+  .role-buttons button { margin: 10px; padding: 15px 30px; background-color: #FF3B30; color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
   .role-buttons button:hover { background-color: #cc2a23; }
 
   footer.desktop-footer { padding: 30px 0; background: #fff; text-align: center; }
@@ -59,24 +33,14 @@ body, html { height: 100%; background-color: #f4f6f8; color: #333; }
   .welcome-header, main.welcome, footer.mobile-footer { display: block !important; }
 
   .welcome-header { text-align: center; padding: 20px 0 0; font-size: 1.5rem; }
-  main.welcome {
-    min-height: calc(100vh - 100px);
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; padding: 20px;
-  }
+  main.welcome { min-height: calc(100vh - 100px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
   main.welcome h1 { font-size: 2rem; margin-bottom: 20px; color: #FF3B30; }
   main.welcome p { font-size: 1rem; color: #666; margin-bottom: 15px; max-width: 90%; }
 
   .role-buttons { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; width: 100%; max-width: 300px; }
-  .role-button {
-    width: 100%; padding: 15px 0; font-size: 1.1rem; font-weight: 600;
-    background-color: #FF3B30; color: white; text-align: center; border-radius: 25px;
-    box-shadow: 0 3px 6px rgba(255, 59, 48, 0.4); transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    border: none; cursor: pointer;
-  }
+  .role-button { width: 100%; padding: 15px 0; font-size: 1.1rem; font-weight: 600; background-color: #FF3B30; color: white; text-align: center; border-radius: 25px; box-shadow: 0 3px 6px rgba(255, 59, 48, 0.4); transition: background-color 0.3s ease, box-shadow 0.3s ease; border: none; cursor: pointer; }
   .role-button:hover, .role-button:focus { background-color: #cc2a23; box-shadow: 0 5px 12px rgba(204, 42, 35, 0.6); outline: none; }
 
-  /* Room Slider */
   .room-slider { margin-top: 20px; overflow: hidden; width: 100%; max-width: 350px; }
   .slides { display: flex; transition: transform 0.5s ease-in-out; }
   .slide { min-width: 80%; margin-right: 10px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
@@ -96,11 +60,10 @@ body, html { height: 100%; background-color: #f4f6f8; color: #333; }
 .modal form { display: flex; flex-direction: column; }
 .modal input { margin-bottom: 10px; padding:10px; border-radius:5px; border:1px solid #ccc; }
 .modal button.submit-btn { background-color: #FF3B30; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; }
-
 a { text-decoration: none; color: inherit; }
 </style>
 
-<!-- ===== Firebase SDKs ===== -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -189,10 +152,16 @@ const db = firebase.firestore();
 
 // ===== Modal Logic =====
 const modal = document.getElementById('authModal');
-document.querySelectorAll('.role-button').forEach(btn => {
+const roleButtons = document.querySelectorAll('.role-button');
+roleButtons.forEach(btn => {
   btn.addEventListener('click', () => {
+    window.userRole = btn.dataset.role; // store role
     modal.style.display = 'flex';
-    window.userRole = btn.dataset.role;
+    // Always open login by default
+    loginForm.style.display = 'flex';
+    signupForm.style.display = 'none';
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
   });
 });
 document.querySelector('.close-btn').addEventListener('click', () => modal.style.display = 'none');
