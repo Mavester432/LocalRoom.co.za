@@ -30,53 +30,21 @@
       user-select: none;
       transition: background-color 0.3s ease;
     }
-    .home-btn:hover, #logout:hover {
-      background: #d62828;
-    }
-    .form-container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    #preview-container img {
-      max-width: 100px;
-      max-height: 100px;
-      object-fit: cover;
-      margin: 6px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .img-wrapper {
-      display: inline-block;
-      position: relative;
-    }
+    .home-btn:hover, #logout:hover { background: #d62828; }
+
+    .form-container { max-width: 600px; margin: auto; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 4px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    #preview-container { display: flex; flex-wrap: wrap; margin-top: 10px; }
+    .img-wrapper { position: relative; margin: 6px; }
+    .img-wrapper img { max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
     .img-wrapper button {
       position: absolute;
-      top: 2px;
-      right: 2px;
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      line-height: 18px;
-      padding: 0;
+      top: 2px; right: 2px;
+      background: red; color: white;
+      border: none; border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: 12px; cursor: pointer; line-height: 18px; padding: 0;
     }
     button[type="submit"] {
       margin-top: 15px;
@@ -88,16 +56,14 @@
       cursor: pointer;
       font-size: 1rem;
     }
-    button[type="submit"]:hover {
-      background: #21867a;
-    }
+    button[type="submit"]:hover { background: #21867a; }
   </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <a href="index.html" class="home-btn" aria-label="Go to Home page">🏠 Home</a>
-  <button id="logout" aria-label="Logout from your account">Logout</button>
+  <a href="index.html" class="home-btn">🏠 Home</a>
+  <button id="logout">Logout</button>
 </div>
 
 <div class="form-container">
@@ -128,12 +94,12 @@
   import {
     onAuthStateChanged,
     signOut
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
   import {
     doc,
     getDoc,
     updateDoc
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
   const form = document.getElementById("edit-room-form");
   const titleInput = document.getElementById("title");
@@ -150,28 +116,20 @@
   let currentUser = null;
   let existingImages = [];
 
-  // Logout button handler
+  // Logout
   logoutBtn.addEventListener("click", async () => {
     await signOut(auth);
     window.location.href = "login.html";
   });
 
-  // Warn on back navigation / page unload (like pressing back button)
-  window.addEventListener("beforeunload", function (e) {
-    e.preventDefault();
-    e.returnValue = '';
-  });
-
-  // For SPA-like back button interception:
+  // Back button confirmation
   window.history.pushState(null, "", window.location.href);
-  window.addEventListener('popstate', function (event) {
-    const confirmLeave = confirm("You are about to logout. Do you want to proceed?");
-    if (confirmLeave) {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
+  window.addEventListener('popstate', async () => {
+    const leave = confirm("You are about to leave. Do you want to logout?");
+    if (leave) {
+      await signOut(auth);
+      window.location.href = "index.html";
     } else {
-      // Prevent back navigation by pushing the state again
       window.history.pushState(null, "", window.location.href);
     }
   });
@@ -207,7 +165,6 @@
     priceInput.value = roomData.price;
     featuresInput.value = roomData.features;
     existingImages = roomData.images || [];
-
     renderImages();
   });
 
@@ -219,12 +176,10 @@
 
       const img = document.createElement("img");
       img.src = url;
-      img.alt = "Room image";
 
       const btn = document.createElement("button");
       btn.type = "button";
       btn.innerHTML = "×";
-      btn.setAttribute("aria-label", "Remove image");
       btn.onclick = () => {
         existingImages.splice(index, 1);
         renderImages();
@@ -240,30 +195,24 @@
     e.preventDefault();
 
     const files = newImagesInput.files;
-    const totalImages = existingImages.length + files.length;
-
-    if (totalImages > 6) {
+    if (existingImages.length + files.length > 6) {
       alert("You can have up to 6 images total.");
       return;
     }
 
     try {
       const uploadedUrls = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "unsigned_preset");
 
-      if (files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-          const formData = new FormData();
-          formData.append("file", files[i]);
-          formData.append("upload_preset", "unsigned_preset");
-
-          const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
-            method: "POST",
-            body: formData
-          });
-
-          const data = await res.json();
-          if (data.secure_url) uploadedUrls.push(data.secure_url);
-        }
+        const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (data.secure_url) uploadedUrls.push(data.secure_url);
       }
 
       const finalImages = [...existingImages, ...uploadedUrls];
@@ -279,7 +228,7 @@
       alert("Listing updated!");
       window.location.href = "dashboard.html";
     } catch (err) {
-      console.error("Update failed:", err);
+      console.error(err);
       alert("Something went wrong. Try again.");
     }
   });
