@@ -58,6 +58,7 @@
     button.contact-btn:hover {
       background: #d62828;
     }
+
     /* Modal Styles */
     #modal {
       display: none;
@@ -83,6 +84,24 @@
       height: 100px;
       padding: 10px;
       margin-bottom: 10px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
@@ -118,6 +137,10 @@
   </div>
 </div>
 
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Firebase (using updated CDN 12.5.0) -->
 <script type="module">
   import { auth, db } from "./firebase-config.js";
   import {
@@ -127,23 +150,31 @@
     orderBy,
     addDoc,
     serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
   import {
     signOut,
     onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
   const container = document.querySelector(".listings-container");
   const filterInput = document.getElementById("filter");
   const homeBtn = document.getElementById("homeBtn");
   const logoutBtn = document.getElementById("logoutBtn");
-
   const modal = document.getElementById("modal");
   const messageInput = document.getElementById("messageText");
   const sendBtn = document.getElementById("sendBtn");
+  const toast = document.getElementById("toast");
 
   let currentUser = null;
   let currentLandlordId = null;
+  let allRooms = [];
+
+  const showToast = (text, color = "#333") => {
+    toast.textContent = text;
+    toast.style.background = color;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  };
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -155,7 +186,7 @@
     try {
       const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
-      const allRooms = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      allRooms = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       displayListings(allRooms);
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -174,9 +205,9 @@
       const card = document.createElement("div");
       card.className = "room-card";
 
-      const imagesHtml = (room.images || []).map(url =>
-        `<img src="${url}" alt="Room image" />`
-      ).join("");
+      const imagesHtml = (room.images && room.images.length > 0)
+        ? room.images.map(url => `<img src="${url}" alt="Room image" />`).join("")
+        : `<img src="assets/no-image.png" alt="No image available" />`;
 
       card.innerHTML = `
         <div class="room-images">${imagesHtml}</div>
@@ -188,6 +219,10 @@
 
       const contactBtn = card.querySelector(".contact-btn");
       contactBtn.addEventListener("click", () => {
+        if (!currentUser) {
+          showToast("Please log in to contact landlords.", "#e63946");
+          return;
+        }
         currentLandlordId = contactBtn.dataset.id;
         modal.style.display = "block";
       });
@@ -200,11 +235,11 @@
     const message = messageInput.value.trim();
 
     if (!currentUser) {
-      alert("Please log in to send a message.");
+      showToast("Please log in to send a message.", "#e63946");
       return;
     }
     if (!message || !currentLandlordId) {
-      alert("Message cannot be empty.");
+      showToast("Message cannot be empty.", "#e63946");
       return;
     }
 
@@ -216,12 +251,12 @@
         timestamp: serverTimestamp()
       });
 
-      alert("Message sent successfully!");
+      showToast("Message sent successfully!", "#28a745");
       messageInput.value = "";
       modal.style.display = "none";
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message.");
+      showToast("Failed to send message.", "#e63946");
     }
   });
 
@@ -241,7 +276,8 @@
   logoutBtn.addEventListener("click", async () => {
     if (confirm("Are you sure you want to logout?")) {
       await signOut(auth);
-      window.location.href = "login.html";
+      showToast("Logged out successfully!", "#28a745");
+      setTimeout(() => (window.location.href = "login.html"), 1500);
     }
   });
 
