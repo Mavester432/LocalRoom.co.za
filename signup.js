@@ -2,23 +2,21 @@ import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebase
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { auth, db } from "./firebase-config.js";
 
-// Toast helper function (same as login.js)
+// ===== Toast Helper =====
 function showToast(message, type = "error") {
   const container = document.getElementById("toast-container");
   if (!container) return;
 
   const toast = document.createElement("div");
-  toast.classList.add("toast", type);
+  toast.className = `toast ${type}`;
   toast.textContent = message;
 
   container.appendChild(toast);
 
-  // Remove toast after 3 seconds
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+  setTimeout(() => toast.remove(), 3000);
 }
 
+// ===== Signup Handler =====
 document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   if (!signupForm) return;
@@ -36,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const business = document.getElementById("business")?.value.trim() || "";
     const address = document.getElementById("address")?.value.trim() || "";
 
+    // ===== Basic Validation =====
     if (!name || !email.includes("@") || password.length < 6) {
       showToast("Please fill out all required fields correctly.", "error");
       return;
@@ -46,9 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
     submitButton.textContent = "Signing up...";
 
     try {
+      // ===== Create Firebase Auth User =====
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // ===== Prepare Firestore User Data =====
       const userData = {
         name,
         email,
@@ -62,16 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
         userData.address = address;
       }
 
+      // ===== Save User Data to Firestore =====
       await setDoc(doc(db, "users", user.uid), userData);
 
       showToast("Signup successful! Redirecting...", "success");
 
+      // ===== Redirect Based on Role =====
       setTimeout(() => {
-        if (role === "landlord") {
-          window.location.href = "list-room.html";
-        } else {
-          window.location.href = "listings.html";
-        }
+        window.location.href = role === "landlord" ? "list-room.html" : "listings.html";
       }, 1200);
 
     } catch (error) {
@@ -79,8 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error.code === "auth/email-already-in-use") {
         showToast("This email is already registered. Please log in.", "error");
       } else {
-        showToast("Error: " + error.message, "error");
+        showToast(`Error: ${error.message}`, "error");
       }
+
       submitButton.disabled = false;
       submitButton.textContent = "Sign Up";
     }
