@@ -1,28 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LocalRoom</title>
-  <style>
-    body { font-family:'Segoe UI', sans-serif; background:#f4f6f8; color:#333; margin:0; }
-    .role-buttons { display:flex; gap:15px; margin-top:20px; justify-content:center; }
-    .role-button { padding:15px 30px; background:#FF3B30; color:white; border:none; border-radius:25px; cursor:pointer; font-weight:bold; }
-    .role-button:hover { background:#cc2a23; }
-    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:10; }
-    .modal-content { background:white; width:90%; max-width:400px; padding:20px; border-radius:10px; position:relative; }
-    .close-btn { position:absolute; top:10px; right:15px; font-size:1.5rem; cursor:pointer; }
-    .modal-tabs { display:flex; margin-bottom:15px; }
-    .modal-tabs button { flex:1; padding:10px; cursor:pointer; background:#f1f1f1; border:none; font-weight:bold; }
-    .modal-tabs button.active { background:#FF3B30; color:white; }
-    .modal form { display:flex; flex-direction:column; }
-    .modal input { margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc; }
-    .modal button.submit-btn { background:#FF3B30; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LocalRoom</title>
+<style>
+  body { font-family:'Segoe UI', sans-serif; background:#f4f6f8; color:#333; margin:0; }
+  h1 { text-align:center; color:#FF3B30; margin-top:50px; }
+
+  /* Role buttons */
+  .role-buttons { display:flex; gap:15px; margin-top:20px; justify-content:center; }
+  .role-button { padding:15px 30px; background:#FF3B30; color:white; border:none; border-radius:25px; cursor:pointer; font-weight:bold; }
+  .role-button:hover { background:#cc2a23; }
+
+  /* Modal */
+  .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:10; }
+  .modal-content { background:white; width:90%; max-width:400px; padding:20px; border-radius:10px; position:relative; }
+  .close-btn { position:absolute; top:10px; right:15px; font-size:1.5rem; cursor:pointer; }
+  .modal-tabs { display:flex; margin-bottom:15px; }
+  .modal-tabs button { flex:1; padding:10px; cursor:pointer; background:#f1f1f1; border:none; font-weight:bold; }
+  .modal-tabs button.active { background:#FF3B30; color:white; }
+  .modal form { display:flex; flex-direction:column; }
+  .modal input { margin-bottom:10px; padding:10px; border-radius:5px; border:1px solid #ccc; }
+  .modal button.submit-btn { background:#FF3B30; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; }
+
+  /* Main container */
+  .main-container { display:flex; flex-wrap:wrap; max-width:1200px; margin:40px auto 20px; gap:20px; padding:0 10px; }
+
+  /* Slider */
+  .slider { flex:2; min-width:300px; position:relative; border-radius:12px; overflow:hidden; background:white; box-shadow:0 3px 10px rgba(0,0,0,0.1); }
+  .slides { display:flex; transition:0.5s; }
+  .slide { min-width:100%; transition:0.5s; }
+  .slide img { width:100%; height:400px; object-fit:cover; }
+
+  .slide-buttons { position:absolute; top:50%; width:100%; display:flex; justify-content:space-between; transform:translateY(-50%); }
+  .slide-buttons button { background:rgba(0,0,0,0.5); color:white; border:none; padding:10px; cursor:pointer; border-radius:50%; }
+
+  /* Side Panel */
+  .side-panel { flex:1; min-width:250px; background:white; border-radius:12px; padding:20px; box-shadow:0 3px 10px rgba(0,0,0,0.1); height:max-content; }
+  .side-panel h3 { margin-top:0; color:#1d3557; }
+  .side-panel p { margin:8px 0; color:#555; }
+  .side-panel a { color:#e63946; text-decoration:none; }
+  .side-panel a:hover { text-decoration:underline; }
+
+  /* Featured Rooms */
+  .featured-rooms { max-width:1200px; margin:30px auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:20px; padding:0 10px; }
+  .room-card { background:white; border-radius:10px; overflow:hidden; box-shadow:0 3px 8px rgba(0,0,0,0.1); cursor:pointer; transition:0.3s; }
+  .room-card:hover { transform:scale(1.02); }
+  .room-card img { width:100%; height:150px; object-fit:cover; }
+  .room-card .info { padding:10px; }
+  .room-card .info h4 { margin:5px 0; color:#1d3557; }
+  .room-card .info p { margin:3px 0; color:#555; font-size:0.9rem; }
+
+  @media(max-width:900px) { .main-container { flex-direction:column; } .slider img { height:250px; } }
+</style>
 </head>
 <body>
 
-<h1 style="text-align:center; color:#FF3B30; margin-top:50px;">Welcome to LocalRoom</h1>
+<h1>Welcome to LocalRoom</h1>
 <div class="role-buttons">
   <button class="role-button" data-role="landlord">I am a Landlord</button>
   <button class="role-button" data-role="seeker">I am a Room Seeker</button>
@@ -64,127 +99,199 @@
   </div>
 </div>
 
+<!-- Main Slider + Side Panel -->
+<div class="main-container">
+  <div class="slider" id="slider">
+    <div class="slides" id="slides"></div>
+    <div class="slide-buttons">
+      <button id="prevBtn">&#10094;</button>
+      <button id="nextBtn">&#10095;</button>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <h3>About LocalRoom</h3>
+    <p>LocalRoom is South Africa's trusted platform to find affordable rooms for rent. Browse available rooms, contact landlords directly, and manage your listings seamlessly.</p>
+    <h3>Contact</h3>
+    <p><strong>Email:</strong> <a href="mailto:info@localroom.co.za">info@localroom.co.za</a></p>
+    <p><strong>Phone:</strong> +27 12 345 6789</p>
+    <p><strong>Address:</strong> 123 Main Street, Johannesburg, South Africa</p>
+    <h3>Follow Us</h3>
+    <p>
+      <a href="#">Facebook</a> | 
+      <a href="#">Twitter</a> | 
+      <a href="#">Instagram</a>
+    </p>
+  </div>
+</div>
+
+<!-- Featured Rooms -->
+<h2 style="text-align:center; margin-top:40px; color:#1d3557;">Featured Rooms</h2>
+<div class="featured-rooms" id="featuredRooms"></div>
+
 <script type="module">
-  import { auth, db } from './firebase-config.js';
-  import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-  import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { doc, setDoc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-  const modal = document.getElementById('authModal');
-  const roleButtons = document.querySelectorAll('.role-button');
-  const closeBtn = document.querySelector('.close-btn');
-  const loginTab = document.getElementById('loginTab');
-  const signupTab = document.getElementById('signupTab');
+// Modal Auth
+const modal = document.getElementById('authModal');
+const roleButtons = document.querySelectorAll('.role-button');
+const closeBtn = document.querySelector('.close-btn');
+const loginTab = document.getElementById('loginTab');
+const signupTab = document.getElementById('signupTab');
 
-  const loginForm = document.getElementById('loginForm');
-  const signupLandlordForm = document.getElementById('signupLandlordForm');
-  const signupSeekerForm = document.getElementById('signupSeekerForm');
+const loginForm = document.getElementById('loginForm');
+const signupLandlordForm = document.getElementById('signupLandlordForm');
+const signupSeekerForm = document.getElementById('signupSeekerForm');
 
-  let selectedRole = '';
+let selectedRole = '';
 
-  // Open modal and select role
-  roleButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-      selectedRole = btn.dataset.role;
-      showSignupFormIfTabActive();
-    });
-  });
-
-  closeBtn.addEventListener('click', () => modal.style.display = 'none');
-
-  // Tabs
-  loginTab.addEventListener('click', () => {
-    loginForm.style.display = 'flex';
-    signupLandlordForm.style.display = 'none';
-    signupSeekerForm.style.display = 'none';
-    loginTab.classList.add('active');
-    signupTab.classList.remove('active');
-  });
-
-  signupTab.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    loginTab.classList.remove('active');
-    signupTab.classList.add('active');
+roleButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    selectedRole = btn.dataset.role;
     showSignupFormIfTabActive();
   });
+});
 
-  function showSignupFormIfTabActive() {
-    if (!signupTab.classList.contains('active')) return;
-    if (selectedRole === 'landlord') {
-      signupLandlordForm.style.display = 'flex';
-      signupSeekerForm.style.display = 'none';
-    } else {
-      signupLandlordForm.style.display = 'none';
-      signupSeekerForm.style.display = 'flex';
-    }
+closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+loginTab.addEventListener('click', () => {
+  loginForm.style.display = 'flex';
+  signupLandlordForm.style.display = 'none';
+  signupSeekerForm.style.display = 'none';
+  loginTab.classList.add('active');
+  signupTab.classList.remove('active');
+});
+
+signupTab.addEventListener('click', () => {
+  loginForm.style.display = 'none';
+  loginTab.classList.remove('active');
+  signupTab.classList.add('active');
+  showSignupFormIfTabActive();
+});
+
+function showSignupFormIfTabActive() {
+  if (!signupTab.classList.contains('active')) return;
+  if (selectedRole === 'landlord') {
+    signupLandlordForm.style.display = 'flex';
+    signupSeekerForm.style.display = 'none';
+  } else {
+    signupLandlordForm.style.display = 'none';
+    signupSeekerForm.style.display = 'flex';
   }
+}
 
-  // Login
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+// Login
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
-      const userSnap = await getDoc(userDocRef);
-      let role = 'seeker';
-      if(userSnap.exists()) role = userSnap.data().role;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+    const userSnap = await getDoc(userDocRef);
+    let role = 'seeker';
+    if(userSnap.exists()) role = userSnap.data().role;
 
-      alert("Login successful!");
-      modal.style.display = 'none';
+    alert("Login successful!");
+    modal.style.display = 'none';
 
-      // Redirect based on role
-      if(role === 'landlord') window.location.href = 'dashboard.html';
-      else window.location.href = 'listings.html';
-    } catch(err) {
-      alert("Login failed: " + err.message);
+    if(role === 'landlord') window.location.href = 'dashboard.html';
+    else window.location.href = 'listings.html';
+  } catch(err) {
+    alert("Login failed: " + err.message);
+  }
+});
+
+// Landlord Signup
+signupLandlordForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('landlordName').value;
+  const email = document.getElementById('landlordEmail').value;
+  const password = document.getElementById('landlordPassword').value;
+  const phone = document.getElementById('landlordPhone').value;
+  const address = document.getElementById('landlordAddress').value;
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, 'users', userCred.user.uid), { name, email, role:'landlord', phone, address });
+    alert("Landlord signup successful!");
+    modal.style.display = 'none';
+    window.location.href = 'dashboard.html';
+  } catch(err) { alert("Signup failed: " + err.message); }
+});
+
+// Room Seeker Signup
+signupSeekerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('seekerName').value;
+  const email = document.getElementById('seekerEmail').value;
+  const password = document.getElementById('seekerPassword').value;
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, 'users', userCred.user.uid), { name, email, role:'seeker' });
+    alert("Room Seeker signup successful!");
+    modal.style.display = 'none';
+    window.location.href = 'listings.html';
+  } catch(err) { alert("Signup failed: " + err.message); }
+});
+
+// ===== Slider & Featured Rooms =====
+const slidesContainer = document.getElementById("slides");
+const featuredContainer = document.getElementById("featuredRooms");
+let currentIndex = 0;
+let allRooms = [];
+
+async function loadRooms(){
+  try {
+    const q = query(collection(db,"listings"), orderBy("createdAt","desc"));
+    const snapshot = await getDocs(q);
+    allRooms = snapshot.docs.map(doc => ({ id:doc.id, ...doc.data() }));
+
+    // Slider
+    if(allRooms.length===0){
+      slidesContainer.innerHTML = `<div class="slide"><img src="https://via.placeholder.com/800x400?text=No+Rooms+Available" /></div>`;
+    } else {
+      slidesContainer.innerHTML = allRooms.map(room => `
+        <div class="slide">
+          <img src="${room.images?.[0]||'https://via.placeholder.com/800x400?text=No+Image'}" alt="${room.title}">
+        </div>
+      `).join('');
     }
-  });
 
-  // Landlord Signup
-  signupLandlordForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('landlordName').value;
-    const email = document.getElementById('landlordEmail').value;
-    const password = document.getElementById('landlordPassword').value;
-    const phone = document.getElementById('landlordPhone').value;
-    const address = document.getElementById('landlordAddress').value;
+    // Featured Rooms
+    featuredContainer.innerHTML = allRooms.map(room => `
+      <div class="room-card" onclick="window.location.href='room-details.html?id=${room.id}'">
+        <img src="${room.images?.[0]||'https://via.placeholder.com/400x300?text=No+Image'}" alt="${room.title}">
+        <div class="info">
+          <h4>${room.title||"Untitled Room"}</h4>
+          <p>${room.city||"Unknown Location"}</p>
+          <p>R${room.price||"?"}/month</p>
+        </div>
+      </div>
+    `).join('');
+  } catch(err){ console.error(err); }
+}
 
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', userCred.user.uid), {
-        name, email, role: 'landlord', phone, address
-      });
-      alert("Landlord signup successful!");
-      modal.style.display = 'none';
-      window.location.href = 'dashboard.html';
-    } catch(err) {
-      alert("Signup failed: " + err.message);
-    }
-  });
+function showSlide(index){
+  const slides = document.querySelectorAll('.slide');
+  if(slides.length===0) return;
+  if(index<0) currentIndex = slides.length-1;
+  else if(index>=slides.length) currentIndex=0;
+  else currentIndex=index;
+  slidesContainer.style.transform = `translateX(${-currentIndex*100}%)`;
+}
 
-  // Room Seeker Signup
-  signupSeekerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('seekerName').value;
-    const email = document.getElementById('seekerEmail').value;
-    const password = document.getElementById('seekerPassword').value;
+document.getElementById("prevBtn").addEventListener("click",()=> showSlide(currentIndex-1));
+document.getElementById("nextBtn").addEventListener("click",()=> showSlide(currentIndex+1));
 
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', userCred.user.uid), {
-        name, email, role: 'seeker'
-      });
-      alert("Room Seeker signup successful!");
-      modal.style.display = 'none';
-      window.location.href = 'listings.html';
-    } catch(err) {
-      alert("Signup failed: " + err.message);
-    }
-  });
+loadRooms().then(()=>showSlide(0));
+setInterval(()=>showSlide(currentIndex+1),5000);
+
 </script>
-
 </body>
 </html>
