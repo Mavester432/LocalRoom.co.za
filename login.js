@@ -1,15 +1,19 @@
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
+// Assuming auth and db are initialized and exposed as window.auth / window.db
 const auth = window.auth;
 const db = window.db;
 
-function showToast(message, type="error") {
+// Toast helper
+function showToast(message, type = "error") {
   const container = document.getElementById("toast-container");
   if (!container) return;
+
   const toast = document.createElement("div");
-  toast.className = "toast";
+  toast.className = `toast ${type}`;
   toast.textContent = message;
+
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
@@ -23,39 +27,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-    const button = loginForm.querySelector("button");
-    button.disabled = true;
-    button.textContent = "Logging in...";
+    const submitButton = loginForm.querySelector("button");
+
+    // Basic validation
+    if (!email || !password) {
+      showToast("Please enter both email and password.", "error");
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Logging in...";
 
     try {
+      // Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Fetch user data from Firestore
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) throw new Error("User data not found");
+
+      if (!userDoc.exists()) throw new Error("User data not found.");
 
       const userData = userDoc.data();
       const role = userData.role;
 
-      // Return URL logic
+      // Handle redirect if a return URL is stored
       const returnURL = localStorage.getItem("returnURL");
       if (returnURL) {
         localStorage.removeItem("returnURL");
         showToast("Login successful! Redirecting...", "success");
-        setTimeout(() => { window.location.replace(returnURL); }, 1000);
+        setTimeout(() => window.location.replace(returnURL), 1000);
         return;
       }
 
       // Default role-based redirect
       if (role === "landlord") window.location.href = "dashboard.html";
       else if (role === "seeker") window.location.href = "listings.html";
-      else throw new Error("Unknown role");
+      else throw new Error("Unknown user role.");
 
-    } catch (err) {
-      showToast(err.message || "Login failed");
-      button.disabled = false;
-      button.textContent = "Login";
+    } catch (error) {
+      console.error("Login error:", error);
+      showToast(error.message || "Login failed.", "error");
+      submitButton.disabled = false;
+      submitButton.textContent = "Login";
     }
   });
 });
