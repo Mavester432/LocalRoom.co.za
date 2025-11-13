@@ -5,11 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Browse Rooms – LocalRoom</title>
 <style>
-  body{font-family:sans-serif;background:#f4f6f8;margin:0;padding:0;}
-  .listings-container{max-width:900px;margin:20px auto;padding:0 10px;}
-  .room-card{background:white;border:1px solid #ddd;padding:15px;margin-bottom:20px;border-radius:8px;}
-  .room-card img{max-width:100px;margin-right:5px;margin-bottom:5px;border-radius:5px;}
-  input#filter{width:80%;max-width:400px;padding:10px;margin:20px auto;display:block;}
+  body {
+    font-family: sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+  }
+
+  .listings-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 10px;
+  }
+
+  .room-card {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .room-card img {
+    max-width: 100px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+  }
+
+  input#filter {
+    width: 80%;
+    max-width: 400px;
+    padding: 10px;
+    margin: 20px auto;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  /* Contact buttons styling */
+  .contact-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .contact-buttons a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .whatsapp-btn {
+    background-color: #25D366;
+  }
+
+  .call-btn {
+    background-color: #007bff;
+  }
 </style>
 </head>
 <body>
@@ -18,39 +77,63 @@
 <div class="listings-container"></div>
 
 <script type="module">
-import { db, auth } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const container = document.querySelector(".listings-container");
 const filterInput = document.getElementById("filter");
-let allRooms=[];
+let allRooms = [];
 
 const displayRooms = (rooms) => {
-  container.innerHTML="";
-  if(rooms.length===0){ container.innerHTML="<p>No rooms found.</p>"; return; }
-  rooms.forEach(room=>{
-    const card=document.createElement("div");
-    card.className="room-card";
-    card.innerHTML=`
-      <h3>${room.title}</h3>
-      <p>${room.location} – R${room.price}/month</p>
-      <div>${(room.images||[]).map(url=>`<img src="${url}" />`).join('')}</div>
+  container.innerHTML = "";
+  if (rooms.length === 0) {
+    container.innerHTML = "<p>No rooms found.</p>";
+    return;
+  }
+
+  rooms.forEach(room => {
+    const card = document.createElement("div");
+    card.className = "room-card";
+    const phone = room.phone ? room.phone.replace(/\s+/g, "") : "";
+
+    card.innerHTML = `
+      <h3>${room.title || "Untitled Room"}</h3>
+      <p>${room.location || "Location not specified"} – R${room.price || "N/A"}/month</p>
+      <div>${(room.images || []).map(url => `<img src="${url}" alt="Room image">`).join('')}</div>
+      ${
+        phone
+          ? `<div class="contact-buttons">
+              <a href="https://wa.me/${phone.startsWith('+') ? phone.slice(1) : phone}" target="_blank" class="whatsapp-btn">💬 Chat on WhatsApp</a>
+              <a href="tel:${phone}" class="call-btn">📞 Call Now</a>
+            </div>`
+          : `<p style="color:#888;font-size:13px;margin-top:8px;">Contact details not available</p>`
+      }
     `;
     container.appendChild(card);
   });
 };
 
-const fetchRooms = async ()=>{
-  try{
-    const q=query(collection(db,"listings"),orderBy("createdAt","desc"));
-    const snapshot=await getDocs(q);
-    allRooms = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+const fetchRooms = async () => {
+  try {
+    const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    allRooms = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     displayRooms(allRooms);
-  }catch(err){ console.error(err); container.innerHTML="<p>Failed to load rooms.</p>"; }
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p>Failed to load rooms.</p>";
+  }
 };
-filterInput.addEventListener("input",()=>{
-  const val=filterInput.value.toLowerCase();
-  displayRooms(allRooms.filter(r=>(r.title||"").toLowerCase().includes(val) || (r.location||"").toLowerCase().includes(val)));
+
+filterInput.addEventListener("input", () => {
+  const val = filterInput.value.toLowerCase();
+  displayRooms(
+    allRooms.filter(
+      r =>
+        (r.title || "").toLowerCase().includes(val) ||
+        (r.location || "").toLowerCase().includes(val)
+    )
+  );
 });
 
 fetchRooms();
