@@ -9,7 +9,7 @@
     font-family: sans-serif;
     background: #f4f6f8;
     margin: 0;
-    padding-bottom: 80px; /* prevent overlap with fixed buttons */
+    padding-bottom: 80px; /* prevent overlap with sticky contact bar */
   }
 
   .listings-container {
@@ -19,18 +19,23 @@
   }
 
   .room-card {
-    background: white;
+    background: #fff;
     border: 1px solid #ddd;
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    cursor: pointer;
+  }
+
+  .room-card:hover {
+    transform: translateY(-2px);
   }
 
   .room-card img {
     max-width: 100px;
-    margin-right: 5px;
-    margin-bottom: 5px;
+    margin: 5px 5px 5px 0;
     border-radius: 5px;
   }
 
@@ -44,7 +49,6 @@
     border-radius: 8px;
   }
 
-  /* Contact buttons styling */
   .contact-buttons {
     display: flex;
     gap: 10px;
@@ -62,44 +66,41 @@
     font-size: 14px;
   }
 
-  .whatsapp-btn {
-    background-color: #25D366;
+  .whatsapp-btn { background-color: #25D366; }
+  .call-btn { background-color: #007bff; }
+
+  /* Sticky contact bar for mobile */
+  .sticky-contact {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    z-index: 100;
   }
 
-  .call-btn {
-    background-color: #007bff;
+  .sticky-contact a {
+    flex: 1;
+    margin: 0 5px;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
   }
 
-  /* --- Sticky contact bar for mobile --- */
+  .sticky-contact .whatsapp-btn { background-color: #25D366; }
+  .sticky-contact .call-btn { background-color: #007bff; }
+
   @media (max-width: 768px) {
-    .sticky-contact {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: white;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      z-index: 100;
-    }
-    .sticky-contact a {
-      flex: 1;
-      margin: 0 5px;
-      text-align: center;
-      padding: 12px;
-      border-radius: 8px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .sticky-contact .whatsapp-btn {
-      background-color: #25D366;
-    }
-    .sticky-contact .call-btn {
-      background-color: #007bff;
-    }
+    .room-card img { max-width: 80px; }
+    input#filter { width: 90%; }
   }
 </style>
 </head>
@@ -108,8 +109,8 @@
 <input type="text" id="filter" placeholder="Search by location or title..." />
 <div class="listings-container"></div>
 
-<!-- Sticky contact bar for mobile (hidden until a room with phone is selected) -->
-<div id="stickyBar" class="sticky-contact" style="display:none;">
+<!-- Sticky contact bar for mobile -->
+<div id="stickyBar" class="sticky-contact">
   <a id="stickyWhatsApp" href="#" target="_blank" class="whatsapp-btn">💬 WhatsApp</a>
   <a id="stickyCall" href="#" class="call-btn">📞 Call</a>
 </div>
@@ -123,12 +124,14 @@ const filterInput = document.getElementById("filter");
 const stickyBar = document.getElementById("stickyBar");
 const stickyWhatsApp = document.getElementById("stickyWhatsApp");
 const stickyCall = document.getElementById("stickyCall");
+
 let allRooms = [];
 
+// Function to display room cards
 const displayRooms = (rooms) => {
   container.innerHTML = "";
   if (rooms.length === 0) {
-    container.innerHTML = "<p>No rooms found.</p>";
+    container.innerHTML = "<p style='text-align:center;color:#555;'>No rooms found.</p>";
     stickyBar.style.display = "none";
     return;
   }
@@ -152,7 +155,6 @@ const displayRooms = (rooms) => {
       }
     `;
 
-    // Attach sticky bar trigger (for mobile users)
     if (phone) {
       card.addEventListener("click", () => {
         stickyWhatsApp.href = `https://wa.me/${phone.startsWith('+') ? phone.slice(1) : phone}`;
@@ -165,6 +167,7 @@ const displayRooms = (rooms) => {
   });
 };
 
+// Fetch rooms from Firestore
 const fetchRooms = async () => {
   try {
     const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
@@ -173,21 +176,21 @@ const fetchRooms = async () => {
     displayRooms(allRooms);
   } catch (err) {
     console.error(err);
-    container.innerHTML = "<p>Failed to load rooms.</p>";
+    container.innerHTML = "<p style='text-align:center;color:red;'>Failed to load rooms.</p>";
   }
 };
 
+// Filter functionality
 filterInput.addEventListener("input", () => {
   const val = filterInput.value.toLowerCase();
   displayRooms(
     allRooms.filter(
-      r =>
-        (r.title || "").toLowerCase().includes(val) ||
-        (r.location || "").toLowerCase().includes(val)
+      r => (r.title || "").toLowerCase().includes(val) || (r.location || "").toLowerCase().includes(val)
     )
   );
 });
 
+// Initial load
 fetchRooms();
 </script>
 
