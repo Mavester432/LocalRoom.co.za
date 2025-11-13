@@ -9,7 +9,7 @@
     font-family: sans-serif;
     background: #f4f6f8;
     margin: 0;
-    padding: 0;
+    padding-bottom: 80px; /* prevent overlap with fixed buttons */
   }
 
   .listings-container {
@@ -69,6 +69,38 @@
   .call-btn {
     background-color: #007bff;
   }
+
+  /* --- Sticky contact bar for mobile --- */
+  @media (max-width: 768px) {
+    .sticky-contact {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      z-index: 100;
+    }
+    .sticky-contact a {
+      flex: 1;
+      margin: 0 5px;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .sticky-contact .whatsapp-btn {
+      background-color: #25D366;
+    }
+    .sticky-contact .call-btn {
+      background-color: #007bff;
+    }
+  }
 </style>
 </head>
 <body>
@@ -76,18 +108,28 @@
 <input type="text" id="filter" placeholder="Search by location or title..." />
 <div class="listings-container"></div>
 
+<!-- Sticky contact bar for mobile (hidden until a room with phone is selected) -->
+<div id="stickyBar" class="sticky-contact" style="display:none;">
+  <a id="stickyWhatsApp" href="#" target="_blank" class="whatsapp-btn">💬 WhatsApp</a>
+  <a id="stickyCall" href="#" class="call-btn">📞 Call</a>
+</div>
+
 <script type="module">
 import { db } from "./firebase-config.js";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const container = document.querySelector(".listings-container");
 const filterInput = document.getElementById("filter");
+const stickyBar = document.getElementById("stickyBar");
+const stickyWhatsApp = document.getElementById("stickyWhatsApp");
+const stickyCall = document.getElementById("stickyCall");
 let allRooms = [];
 
 const displayRooms = (rooms) => {
   container.innerHTML = "";
   if (rooms.length === 0) {
     container.innerHTML = "<p>No rooms found.</p>";
+    stickyBar.style.display = "none";
     return;
   }
 
@@ -109,6 +151,16 @@ const displayRooms = (rooms) => {
           : `<p style="color:#888;font-size:13px;margin-top:8px;">Contact details not available</p>`
       }
     `;
+
+    // Attach sticky bar trigger (for mobile users)
+    if (phone) {
+      card.addEventListener("click", () => {
+        stickyWhatsApp.href = `https://wa.me/${phone.startsWith('+') ? phone.slice(1) : phone}`;
+        stickyCall.href = `tel:${phone}`;
+        stickyBar.style.display = "flex";
+      });
+    }
+
     container.appendChild(card);
   });
 };
