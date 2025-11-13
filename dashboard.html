@@ -31,7 +31,7 @@
     z-index:1000;
   }
   .sidebar.closed {
-    left:-260px; /* hidden by default on mobile */
+    left:-260px; /* hidden on mobile by default */
   }
 
   .profile-section {
@@ -203,7 +203,7 @@
   @media (max-width:800px) {
     .sidebar { left:-260px; }
     .sidebar.open { left:0; } /* slides over content */
-    .main-content { margin-left:0; padding:15px; } /* full width when sidebar closed */
+    .main-content { margin-left:0; padding:15px; }
     #hamburgerBtn { display:block; }
   }
 </style>
@@ -286,7 +286,6 @@ const trialDays = document.getElementById("trialDays");
 const activeListings = document.getElementById("activeListings");
 const totalViews = document.getElementById("totalViews");
 
-// Profile modal elements
 const profileModal = document.getElementById("profileModal");
 const closeProfile = document.getElementById("closeProfile");
 const profileName = document.getElementById("profileName");
@@ -313,6 +312,15 @@ hamburgerBtn.addEventListener("click", ()=>{
   sidebar.classList.toggle("open");
 });
 
+// ===== Click outside to close sidebar on mobile =====
+document.addEventListener("click",(e)=>{
+  if(window.innerWidth <= 800){
+    if(!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)){
+      sidebar.classList.remove("open");
+    }
+  }
+});
+
 // ===== Auth & Fetch Listings =====
 onAuthStateChanged(auth, async (user)=>{
   if(!user){ window.location.href="login.html"; return; }
@@ -331,7 +339,6 @@ onAuthStateChanged(auth, async (user)=>{
     profilePhone.value = data.phone || "";
   }
 
-  // Fetch landlord listings
   const q = query(collection(db,"listings"),where("landlordId","==",user.uid));
   const snapshot = await getDocs(q);
   activeListings.textContent = snapshot.size || 0;
@@ -367,9 +374,7 @@ onAuthStateChanged(auth, async (user)=>{
     });
   }
   totalViews.textContent = total;
-
-  // Mock trial countdown (replace with Firestore field later)
-  trialDays.textContent = "15";
+  trialDays.textContent = "15"; // mock trial days
 });
 
 // ===== Buttons =====
