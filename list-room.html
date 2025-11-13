@@ -5,21 +5,121 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>List a Room – LocalRoom</title>
 <style>
-  body, html { font-family: 'Poppins', sans-serif; background:#f4f6f8; margin:0; padding:0; }
-  #loading-overlay { position:fixed;top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.95); display:flex; justify-content:center; align-items:center; z-index:9999; flex-direction:column; }
-  .spinner { border:6px solid #f3f3f3; border-top:6px solid #1d3557; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite; margin-bottom:15px;}
-  @keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
-  .top-bar { display:flex; justify-content:space-between; max-width:900px; margin:20px auto; padding:0 10px; }
-  .top-bar button { background:#e63946; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; transition:0.3s; }
-  .top-bar button:hover { background:#d62828; }
-  .form-container { max-width:500px; margin:20px auto; background:white; padding:25px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); display:none; }
-  .form-container h2 { text-align:center; margin-bottom:20px; color:#1d3557; }
-  .form-container label { display:block; margin:10px 0 5px; font-weight:600; }
-  .form-container input, .form-container textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px; }
-  .form-container button[type="submit"] { background:#1d3557; color:white; border:none; padding:12px; border-radius:25px; cursor:pointer; width:100%; font-weight:600; margin-top:10px; transition: background 0.3s ease; }
-  .form-container button[type="submit"]:hover { background:#457b9d; }
-  #preview-container { display:flex; flex-wrap:wrap; margin-top:10px; }
-  #preview-container img { max-width:100px; max-height:100px; object-fit:cover; margin-right:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc; }
+  body, html {
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Loading overlay */
+  #loading-overlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(255,255,255,0.95);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    flex-direction:column;
+  }
+
+  .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #1d3557;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* Top navigation buttons */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 10px;
+  }
+
+  .top-bar button {
+    background: #e63946;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+
+  .top-bar button:hover { background: #d62828; }
+
+  /* Form container */
+  .form-container {
+    max-width: 500px;
+    margin: 20px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    display: none;
+  }
+
+  .form-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1d3557;
+  }
+
+  .form-container label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: 600;
+  }
+
+  .form-container input, .form-container textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  .form-container button[type="submit"] {
+    background: #1d3557;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 25px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: background 0.3s ease;
+  }
+
+  .form-container button[type="submit"]:hover { background: #457b9d; }
+
+  /* Image previews */
+  #preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  #preview-container img {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
 </style>
 </head>
 <body>
@@ -65,83 +165,4 @@ import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gs
 const form = document.getElementById("list-room-form");
 const imagesInput = document.getElementById("images");
 const previewContainer = document.getElementById("preview-container");
-const pageContent = document.getElementById("page-content");
-const loadingOverlay = document.getElementById("loading-overlay");
-const homeBtn = document.getElementById("homeBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-let currentUser = null;
-
-// Image preview
-imagesInput.addEventListener("change", () => {
-  previewContainer.innerHTML = "";
-  const files = imagesInput.files;
-  if (files.length > 6) { alert("You can upload up to 6 images."); imagesInput.value=""; return; }
-  Array.from(files).forEach(file => {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(file);
-    previewContainer.appendChild(img);
-  });
-});
-
-// Auth check
-onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = "login.html?role=landlord"; return; }
-  currentUser = user;
-  try {
-    const userDoc = await getDoc(doc(db,"users",user.uid));
-    if (!userDoc.exists() || userDoc.data().role !== "landlord") {
-      alert("Access denied. Only landlords can list rooms.");
-      await signOut(auth);
-      window.location.href="login.html";
-      return;
-    }
-    pageContent.style.display = "block";
-  } catch(err) {
-    console.error(err);
-    await signOut(auth);
-    window.location.href="login.html";
-  } finally {
-    loadingOverlay.style.display="none";
-  }
-});
-
-// Buttons
-homeBtn.addEventListener("click", ()=> window.location.href="index.html");
-logoutBtn.addEventListener("click", async ()=> { if(confirm("Logout?")) { await signOut(auth); window.location.href="index.html"; } });
-
-// Submit room
-form.addEventListener("submit", async e => {
-  e.preventDefault();
-  if(!currentUser) return;
-
-  const title = document.getElementById("title").value.trim();
-  const location = document.getElementById("location").value.trim();
-  const price = parseFloat(document.getElementById("price").value);
-  const features = document.getElementById("features").value.trim();
-  const files = imagesInput.files;
-  const imageUrls = [];
-
-  try {
-    if(files.length>0) {
-      for(const file of files) {
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset","unsigned_preset");
-        const res = await fetch("https://api.cloudinary.com/v1_1/dixamcwb1/image/upload", { method:"POST", body:formData });
-        const data = await res.json();
-        if(data.secure_url) imageUrls.push(data.secure_url);
-      }
-    }
-
-    const roomData = { title, location, price, features, images:imageUrls, landlordId:currentUser.uid, createdAt:serverTimestamp() };
-    await addDoc(collection(db,"listings"), roomData);
-    alert("✅ Room listed successfully!");
-    form.reset(); previewContainer.innerHTML="";
-  } catch(err) {
-    console.error(err);
-    alert("❌ Failed to list room. Please try again.");
-  }
-});
-</script>
-</body>
-</html>
+const pageContent = d
