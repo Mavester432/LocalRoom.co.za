@@ -43,6 +43,7 @@
     padding:25px;
     border-radius:12px;
     box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    display:none; /* Hidden until verified */
   }
 
   .form-container h2 {
@@ -118,7 +119,7 @@
   <button id="logoutBtn">Logout</button>
 </div>
 
-<div class="form-container">
+<div class="form-container" id="page-content">
   <h2>List a Room</h2>
   <form id="list-room-form">
     <label for="title">Room Title:</label>
@@ -142,30 +143,16 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
-
-  // ===== Firebase Config =====
-  const firebaseConfig = {
-    apiKey: "AIzaSyCqTJ7hNrVqO_mJ4cfqb5fOj-pvqzq7qII",
-    authDomain: "localroomapp.firebaseapp.com",
-    projectId: "localroomapp",
-    storageBucket: "localroomapp.firebasestorage.app",
-    messagingSenderId: "232945388743",
-    appId: "1:232945388743:web:089083c9f60269406c02e2",
-    measurementId: "G-XBC1GV59MF"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  import { auth, db } from "./firebase-config.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
   const form = document.getElementById("list-room-form");
   const imagesInput = document.getElementById("images");
   const previewContainer = document.getElementById("preview-container");
   const homeBtn = document.getElementById("homeBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const pageContent = document.getElementById("page-content");
   let currentUser = null;
 
   // ===== Image Preview =====
@@ -186,18 +173,34 @@
 
   // ===== Auth Check =====
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("Please log in first.");
-      window.location.href = "login.html?role=landlord";
-      return;
-    }
-    currentUser = user;
+    if (user) {
+      currentUser = user;
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
 
-    // verify role in Firestore
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (!userDoc.exists() || userDoc.data().role !== "landlord") {
-      alert("Access denied. Only landlords can list rooms.");
-      window.location.href = "listings.html";
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          if (userData.role === "landlord") {
+            console.log("✅ Landlord verified:", user.email);
+            pageContent.style.display = "block"; // Show content
+          } else {
+            alert("Access denied. Only landlords can list rooms.");
+            window.location.href = "listings.html";
+          }
+        } else {
+          alert("User record not found. Please log in again.");
+          await signOut(auth);
+          window.location.href = "login.html";
+        }
+      } catch (err) {
+        console.error("Error verifying user:", err);
+        await signOut(auth);
+        window.location.href = "login.html";
+      }
+    } else {
+      console.log("No user logged in. Redirecting...");
+      window.location.href = "login.html?role=landlord";
     }
   });
 
@@ -235,7 +238,6 @@
         }
       }
 
-      // ===== Save to Firestore =====
       const roomData = {
         title: document.getElementById("title").value.trim(),
         city: document.getElementById("location").value.trim(),
@@ -247,13 +249,12 @@
       };
 
       await addDoc(collection(db, "listings"), roomData);
-
-      alert("Room listed successfully!");
+      alert("✅ Room listed successfully!");
       form.reset();
       previewContainer.innerHTML = "";
     } catch (err) {
       console.error(err);
-      alert("Failed to list room. Please try again.");
+      alert("❌ Failed to list room. Please try again.");
     }
   });
 </script>
