@@ -85,6 +85,7 @@ function showToast(message) {
 // ===== Logout =====
 logoutBtn.addEventListener("click", async () => {
   if (confirm("Are you sure you want to logout?")) {
+    localStorage.setItem("returnURL", window.location.pathname); // save current page
     await signOut(auth);
     window.location.href = "login.html";
   }
@@ -93,20 +94,11 @@ logoutBtn.addEventListener("click", async () => {
 // ===== List New Room Button =====
 listRoomBtn.addEventListener("click", () => window.location.href = "list-room.html");
 
-// ===== Back Button / Navigation Warning =====
-window.history.pushState(null, "", window.location.href);
-window.addEventListener("popstate", () => {
-  if (confirm("You are about to logout. Proceed?")) {
-    signOut(auth).then(() => window.location.href = "index.html");
-  } else {
-    window.history.pushState(null, "", window.location.href);
-  }
-});
-
 // ===== Fetch Landlord Listings =====
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     showToast("You must log in.");
+    localStorage.setItem("returnURL", window.location.pathname);
     window.location.href = "login.html";
     return;
   }
@@ -188,7 +180,6 @@ onAuthStateChanged(auth, async (user) => {
     });
   });
 
-  // Close all contact dropdowns when clicking outside
   document.addEventListener("click", () => {
     document.querySelectorAll(".contact-options").forEach(o => o.style.display="none");
   });
