@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { auth, db } from "./firebase-config.js";
 
 // ===== Toast Helper =====
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         name,
         email,
         role,
-        createdAt: new Date()
+        createdAt: serverTimestamp()  // <--- AUTO TIMESTAMP 🚀
       };
 
       if (role === "landlord") {
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
         userData.address = address;
       }
 
-      // ===== Save User Data to Firestore =====
+      // ===== Save User Data =====
       await setDoc(doc(db, "users", user.uid), userData);
 
       showToast("Signup successful! Redirecting...", "success");
@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (error) {
       console.error("Signup error:", error);
+
       if (error.code === "auth/email-already-in-use") {
         showToast("This email is already registered. Please log in.", "error");
       } else {
