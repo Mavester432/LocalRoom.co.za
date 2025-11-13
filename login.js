@@ -22,7 +22,6 @@ function showToast(message, type = "error") {
 // ===== Login Form =====
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
-
   if (!loginForm) return;
 
   loginForm.addEventListener("submit", async (e) => {
@@ -66,10 +65,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const userData = userDoc.data();
       const role = userData.role;
 
+      // ===== Check for return URL =====
+      const returnURL = localStorage.getItem("returnURL");
+      if (returnURL) {
+        localStorage.removeItem("returnURL"); // Clear after use
+        showToast("Login successful! Redirecting...", "success");
+        setTimeout(() => {
+          window.location.replace(returnURL);
+        }, 1000);
+        return;
+      }
+
+      // ===== No return URL: role-based redirect =====
       if (role === "landlord") {
         showToast("Login successful! Redirecting to dashboard...", "success");
         setTimeout(() => {
-          window.location.href = "dashboard.html"; // Direct to dashboard
+          window.location.href = "dashboard.html"; 
         }, 1200);
       } else if (role === "seeker") {
         showToast("Login successful! Redirecting to listings...", "success");
@@ -84,13 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (error) {
       let message = "Login failed.";
-      if (error.code === "auth/user-not-found") {
-        message = "No user found with this email.";
-      } else if (error.code === "auth/wrong-password") {
-        message = "Incorrect password.";
-      } else if (error.code === "auth/invalid-email") {
-        message = "Invalid email format.";
-      }
+      if (error.code === "auth/user-not-found") message = "No user found with this email.";
+      else if (error.code === "auth/wrong-password") message = "Incorrect password.";
+      else if (error.code === "auth/invalid-email") message = "Invalid email format.";
+
       showToast(message, "error");
       loginButton.disabled = false;
       loginButton.textContent = "Login";
