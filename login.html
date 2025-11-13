@@ -6,16 +6,102 @@
   <title>Login - LocalRoom</title>
   <link rel="stylesheet" href="css/signup.css" />
   <style>
-    body { font-family: "Poppins", sans-serif; background-color: #f9fafb; margin:0; padding:0; }
-    .signup-container { display:flex; flex-wrap:wrap; height:100vh; }
-    .left-panel, .right-panel { flex:1; min-width:300px; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:40px; }
-    .left-panel { background-color:#1d3557; color:white; text-align:center; }
-    .right-panel { background-color:#fff; border-left:2px solid #eee; box-shadow:0 0 20px rgba(0,0,0,0.05); }
-    form { display:flex; flex-direction:column; width:100%; max-width:350px; }
-    input { padding:12px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc; outline:none; }
-    button[type="submit"] { background-color:#1d3557; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; }
-    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display:flex; flex-direction: column; gap:10px; }
-    .toast { background:#333; color:white; padding:10px 15px; border-radius:5px; opacity:0.9; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
+    }
+
+    .signup-container {
+      display: flex;
+      flex-wrap: wrap;
+      height: 100vh;
+    }
+
+    .left-panel, .right-panel {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .left-panel {
+      background-color: #1d3557;
+      color: white;
+      text-align: center;
+    }
+
+    .left-panel h1 { font-size: 2.5rem; margin-bottom: 15px; }
+    .left-panel p { font-size: 1.1rem; }
+
+    .right-panel {
+      background-color: #fff;
+      border-left: 2px solid #eee;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    h2 { margin-bottom: 25px; }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    input {
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    button[type="submit"] {
+      background-color: #1d3557;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button[type="submit"]:hover { background-color: #16324c; }
+
+    /* Toast notifications */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #333;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      opacity: 0.95;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .toast.success { background: #2a9d8f; }
+    .toast.error { background: #e63946; }
+
+    @media (max-width: 768px) {
+      .signup-container { flex-direction: column; }
+      .right-panel { border-left: none; box-shadow: none; }
+    }
   </style>
 </head>
 <body>
@@ -61,7 +147,78 @@
   window.db = db;
 </script>
 
-<script type="module" src="login.js"></script>
+<!-- Login Script -->
+<script type="module">
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+  const auth = window.auth;
+  const db = window.db;
+
+  function showToast(message, type="error") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("login-form");
+    if (!loginForm) return;
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const submitButton = loginForm.querySelector("button");
+
+      if (!email || !password) {
+        showToast("Please enter both email and password.", "error");
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Logging in...";
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) throw new Error("User data not found.");
+
+        const userData = userDoc.data();
+        const role = userData.role;
+
+        // Redirect after login
+        const returnURL = localStorage.getItem("returnURL");
+        if (returnURL) {
+          localStorage.removeItem("returnURL");
+          showToast("Login successful! Redirecting...", "success");
+          setTimeout(() => window.location.replace(returnURL), 1000);
+          return;
+        }
+
+        if (role === "landlord") window.location.href = "dashboard.html";
+        else if (role === "seeker") window.location.href = "listings.html";
+        else throw new Error("Unknown user role.");
+
+      } catch (error) {
+        console.error("Login error:", error);
+        showToast(error.message || "Login failed", "error");
+        submitButton.disabled = false;
+        submitButton.textContent = "Login";
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
