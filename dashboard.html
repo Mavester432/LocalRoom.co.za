@@ -31,7 +31,7 @@
     z-index:1000;
   }
   .sidebar.closed {
-    left:-260px;
+    left:-260px; /* hidden by default on mobile */
   }
 
   .profile-section {
@@ -81,7 +81,7 @@
   .main-content {
     flex:1;
     padding:20px;
-    margin-left:260px; /* space for sidebar */
+    margin-left:260px; /* space for sidebar on desktop */
     overflow-y:auto;
     transition: margin-left 0.3s ease;
   }
@@ -202,8 +202,8 @@
   /* ===== Responsive ===== */
   @media (max-width:800px) {
     .sidebar { left:-260px; }
-    .sidebar.open { left:0; }
-    .main-content { margin-left:0; padding:15px; }
+    .sidebar.open { left:0; } /* slides over content */
+    .main-content { margin-left:0; padding:15px; } /* full width when sidebar closed */
     #hamburgerBtn { display:block; }
   }
 </style>
@@ -214,7 +214,7 @@
 <button id="hamburgerBtn">☰ Menu</button>
 
 <!-- ===== Sidebar ===== -->
-<div class="sidebar">
+<div class="sidebar closed">
   <div class="profile-section">
     <img id="sidebarProfilePic" src="https://via.placeholder.com/80" alt="Profile Picture">
     <h3 id="sidebarName">Landlord</h3>
