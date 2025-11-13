@@ -1,287 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Browse Rooms – LocalRoom</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 900px;
-      margin: 20px auto 10px;
-      padding: 0 10px;
-    }
-    .top-bar button {
-      background: #e63946;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .top-bar button:hover {
-      background: #d62828;
-    }
-    .room-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 15px auto;
-      max-width: 600px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .room-images {
-      display: flex;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .room-images img {
-      max-width: 100px;
-      margin-right: 5px;
-      margin-bottom: 5px;
-      border-radius: 5px;
-      object-fit: cover;
-    }
-    button.contact-btn {
-      background: #e63946;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button.contact-btn:hover {
-      background: #d62828;
-    }
-
-    /* Modal Styles */
-    #modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-    #modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 400px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    #modal-content textarea {
-      width: 100%;
-      height: 100px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    /* Toast Notification */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #333;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 6px;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      z-index: 1000;
-    }
-    .toast.show {
-      opacity: 1;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Browse Rooms – LocalRoom</title>
+<style>
+  body{font-family:sans-serif;background:#f4f6f8;margin:0;padding:0;}
+  .listings-container{max-width:900px;margin:20px auto;padding:0 10px;}
+  .room-card{background:white;border:1px solid #ddd;padding:15px;margin-bottom:20px;border-radius:8px;}
+  .room-card img{max-width:100px;margin-right:5px;margin-bottom:5px;border-radius:5px;}
+  input#filter{width:80%;max-width:400px;padding:10px;margin:20px auto;display:block;}
+</style>
 </head>
 <body>
 
-<div class="top-bar">
-  <button id="homeBtn">🏠 Home</button>
-  <button id="logoutBtn">Logout</button>
-</div>
+<input type="text" id="filter" placeholder="Search by location or title..." />
+<div class="listings-container"></div>
 
-<header class="welcome-header">
-  <h1 style="text-align:center;">LocalRoom</h1>
-</header>
-
-<main>
-  <h2 style="text-align: center;">Available Rooms</h2>
-  <input
-    type="text"
-    id="filter"
-    placeholder="Search by location or title..."
-    style="margin: 20px auto; display: block; padding: 10px; width: 80%; max-width: 400px;"
-  />
-  <div class="listings-container"></div>
-</main>
-
-<!-- Modal for messaging -->
-<div id="modal">
-  <div id="modal-content">
-    <h3>Send a Message to Landlord</h3>
-    <textarea id="messageText" placeholder="Type your message..."></textarea>
-    <button id="sendBtn">Send</button>
-    <button onclick="document.getElementById('modal').style.display='none'">Cancel</button>
-  </div>
-</div>
-
-<!-- Toast -->
-<div id="toast" class="toast"></div>
-
-<!-- Firebase (using updated CDN 12.5.0) -->
 <script type="module">
-  import { auth, db } from "./firebase-config.js";
-  import {
-    collection,
-    getDocs,
-    query,
-    orderBy,
-    addDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
-  import {
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { db, auth } from "./firebase-config.js";
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-  const container = document.querySelector(".listings-container");
-  const filterInput = document.getElementById("filter");
-  const homeBtn = document.getElementById("homeBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const modal = document.getElementById("modal");
-  const messageInput = document.getElementById("messageText");
-  const sendBtn = document.getElementById("sendBtn");
-  const toast = document.getElementById("toast");
+const container = document.querySelector(".listings-container");
+const filterInput = document.getElementById("filter");
+let allRooms=[];
 
-  let currentUser = null;
-  let currentLandlordId = null;
-  let allRooms = [];
-
-  const showToast = (text, color = "#333") => {
-    toast.textContent = text;
-    toast.style.background = color;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 3000);
-  };
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      currentUser = user;
-    }
+const displayRooms = (rooms) => {
+  container.innerHTML="";
+  if(rooms.length===0){ container.innerHTML="<p>No rooms found.</p>"; return; }
+  rooms.forEach(room=>{
+    const card=document.createElement("div");
+    card.className="room-card";
+    card.innerHTML=`
+      <h3>${room.title}</h3>
+      <p>${room.location} – R${room.price}/month</p>
+      <div>${(room.images||[]).map(url=>`<img src="${url}" />`).join('')}</div>
+    `;
+    container.appendChild(card);
   });
+};
 
-  async function fetchRooms() {
-    try {
-      const q = query(collection(db, "listings"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      allRooms = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      displayListings(allRooms);
-    } catch (error) {
-      console.error("Error fetching rooms:", error);
-      container.innerHTML = "<p style='text-align:center; color:red;'>Failed to load rooms.</p>";
-    }
-  }
+const fetchRooms = async ()=>{
+  try{
+    const q=query(collection(db,"listings"),orderBy("createdAt","desc"));
+    const snapshot=await getDocs(q);
+    allRooms = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    displayRooms(allRooms);
+  }catch(err){ console.error(err); container.innerHTML="<p>Failed to load rooms.</p>"; }
+};
+filterInput.addEventListener("input",()=>{
+  const val=filterInput.value.toLowerCase();
+  displayRooms(allRooms.filter(r=>(r.title||"").toLowerCase().includes(val) || (r.location||"").toLowerCase().includes(val)));
+});
 
-  function displayListings(rooms) {
-    container.innerHTML = "";
-    if (rooms.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>No rooms found.</p>";
-      return;
-    }
-
-    rooms.forEach((room) => {
-      const card = document.createElement("div");
-      card.className = "room-card";
-
-      const imagesHtml = (room.images && room.images.length > 0)
-        ? room.images.map(url => `<img src="${url}" alt="Room image" />`).join("")
-        : `<img src="assets/no-image.png" alt="No image available" />`;
-
-      card.innerHTML = `
-        <div class="room-images">${imagesHtml}</div>
-        <h3>${room.title || "Untitled Room"}</h3>
-        <p>${room.location || "Unknown location"} – R${room.price || "?"}/month</p>
-        <p>${room.features || ""}</p>
-        <button class="contact-btn" data-id="${room.landlordId}">Contact Landlord</button>
-      `;
-
-      const contactBtn = card.querySelector(".contact-btn");
-      contactBtn.addEventListener("click", () => {
-        if (!currentUser) {
-          showToast("Please log in to contact landlords.", "#e63946");
-          return;
-        }
-        currentLandlordId = contactBtn.dataset.id;
-        modal.style.display = "block";
-      });
-
-      container.appendChild(card);
-    });
-  }
-
-  sendBtn.addEventListener("click", async () => {
-    const message = messageInput.value.trim();
-
-    if (!currentUser) {
-      showToast("Please log in to send a message.", "#e63946");
-      return;
-    }
-    if (!message || !currentLandlordId) {
-      showToast("Message cannot be empty.", "#e63946");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "messages"), {
-        fromUserId: currentUser.uid,
-        toUserId: currentLandlordId,
-        message,
-        timestamp: serverTimestamp()
-      });
-
-      showToast("Message sent successfully!", "#28a745");
-      messageInput.value = "";
-      modal.style.display = "none";
-    } catch (error) {
-      console.error("Error sending message:", error);
-      showToast("Failed to send message.", "#e63946");
-    }
-  });
-
-  filterInput.addEventListener("input", () => {
-    const value = filterInput.value.toLowerCase();
-    const filtered = allRooms.filter((room) =>
-      (room.title || "").toLowerCase().includes(value) ||
-      (room.location || "").toLowerCase().includes(value)
-    );
-    displayListings(filtered);
-  });
-
-  homeBtn.addEventListener("click", () => {
-    window.location.href = "index.html";
-  });
-
-  logoutBtn.addEventListener("click", async () => {
-    if (confirm("Are you sure you want to logout?")) {
-      await signOut(auth);
-      showToast("Logged out successfully!", "#28a745");
-      setTimeout(() => (window.location.href = "login.html"), 1500);
-    }
-  });
-
-  fetchRooms(); // Run on page load
+fetchRooms();
 </script>
 
 </body>
